@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "leather",
+    "checkpoint": "output/checkpoints/leather/best.pt",
+    "output_dir": "output/results/dit_leather",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "leather": {
+      "image_auroc": 0.4439538043478261,
+      "pixel_auroc": 0.8762650358401569,
+      "num_test": 124,
+      "num_anomalous": 92,
+      "num_normal": 32
+    }
+  }
+}

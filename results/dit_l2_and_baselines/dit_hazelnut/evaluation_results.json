@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "hazelnut": {
+      "image_auroc": 0.7439285714285714,
+      "pixel_auroc": 0.8363682997294959,
+      "num_test": 110,
+      "num_anomalous": 70,
+      "num_normal": 40
+    }
+  }
+}

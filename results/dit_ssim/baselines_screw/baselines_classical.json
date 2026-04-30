@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "screw",
+    "output_dir": "output/results/baselines_screw",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "screw": {
+      "pca": {
+        "image_auroc": 0.7210493953679032,
+        "pixel_auroc": 0.883467174943944,
+        "num_test": 160,
+        "num_anomalous": 119,
+        "num_normal": 41
+      },
+      "autoencoder": {
+        "image_auroc": 0.824554211928674,
+        "pixel_auroc": 0.9098514326819764,
+        "num_test": 160,
+        "num_anomalous": 119,
+        "num_normal": 41
+      }
+    }
+  }
+}

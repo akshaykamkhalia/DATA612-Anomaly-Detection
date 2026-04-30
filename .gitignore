@@ -1,0 +1,75 @@
+# --- Secrets ---
+.env
+*.env
+kaggle.json
+
+# --- Data ---
+data/
+*.tiff
+*.tif
+
+# --- Trained model artifacts ---
+# 15 × ~52 MB checkpoints, restored locally from ALL_OUTPUT.zip
+demo/checkpoints/
+# ~87 MB of MVTec test images, recreated by demo/prepare_samples.py
+demo/sample_images/
+# Smoke-test outputs
+demo/output/
+# Per-category outputs from training/eval
+code/output/
+output/
+ALL_OUTPUT.zip
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+nohup.out
+
+# --- Temp ---
+tmp/
+temp/
+*.tmp
+*.bak
+
+# --- LaTeX build artifacts (keep .tex and .pdf) ---
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+report/*.out
+proposal/*.out

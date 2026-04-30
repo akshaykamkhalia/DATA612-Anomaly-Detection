@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "zipper",
+    "output_dir": "output/results/baselines_zipper",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "zipper": {
+      "pca": {
+        "image_auroc": 0.755514705882353,
+        "pixel_auroc": 0.710618812229174,
+        "num_test": 151,
+        "num_anomalous": 119,
+        "num_normal": 32
+      },
+      "autoencoder": {
+        "image_auroc": 0.7198004201680672,
+        "pixel_auroc": 0.775696641535983,
+        "num_test": 151,
+        "num_anomalous": 119,
+        "num_normal": 32
+      }
+    }
+  }
+}

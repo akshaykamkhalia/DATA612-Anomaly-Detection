@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "screw",
+    "checkpoint": "output/checkpoints/screw/best.pt",
+    "output_dir": "output/results/dit_screw",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "screw": {
+      "image_auroc": 0.33162533306005326,
+      "pixel_auroc": 0.7960017954810074,
+      "num_test": 160,
+      "num_anomalous": 119,
+      "num_normal": 41
+    }
+  }
+}

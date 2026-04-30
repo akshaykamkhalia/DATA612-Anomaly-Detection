@@ -1,0 +1,24 @@
+{
+  "category": "hazelnut",
+  "alpha": 0.5,
+  "t_partial": 250,
+  "methods": [
+    "ssim",
+    "l2",
+    "lpips"
+  ],
+  "results": {
+    "ssim": {
+      "image_auroc": 0.40678571428571425,
+      "pixel_auroc": 0.7661637802966409
+    },
+    "l2": {
+      "image_auroc": 0.8078571428571429,
+      "pixel_auroc": 0.8163505965644756
+    },
+    "lpips": {
+      "image_auroc": 0.44107142857142856,
+      "pixel_auroc": 0.670387798519538
+    }
+  }
+}

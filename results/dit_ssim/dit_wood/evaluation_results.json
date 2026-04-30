@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "wood",
+    "checkpoint": "output/checkpoints/wood/best.pt",
+    "output_dir": "output/results/dit_wood",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "wood": {
+      "image_auroc": 0.42894736842105263,
+      "pixel_auroc": 0.73398330148743,
+      "num_test": 79,
+      "num_anomalous": 60,
+      "num_normal": 19
+    }
+  }
+}

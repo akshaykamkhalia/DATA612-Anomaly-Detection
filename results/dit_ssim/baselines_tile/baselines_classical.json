@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "tile",
+    "output_dir": "output/results/baselines_tile",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "tile": {
+      "pca": {
+        "image_auroc": 0.6829004329004328,
+        "pixel_auroc": 0.5510278536426558,
+        "num_test": 117,
+        "num_anomalous": 84,
+        "num_normal": 33
+      },
+      "autoencoder": {
+        "image_auroc": 0.6681096681096681,
+        "pixel_auroc": 0.4930002708846363,
+        "num_test": 117,
+        "num_anomalous": 84,
+        "num_normal": 33
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "zipper",
+    "checkpoint": "output/checkpoints/zipper/best.pt",
+    "output_dir": "output/results/dit_zipper",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "zipper": {
+      "image_auroc": 0.45036764705882354,
+      "pixel_auroc": 0.7418940974326199,
+      "num_test": 151,
+      "num_anomalous": 119,
+      "num_normal": 32
+    }
+  }
+}

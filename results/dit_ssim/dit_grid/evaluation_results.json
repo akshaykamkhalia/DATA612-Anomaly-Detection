@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "grid",
+    "checkpoint": "output/checkpoints/grid/best.pt",
+    "output_dir": "output/results/dit_grid",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "grid": {
+      "image_auroc": 0.5020885547201337,
+      "pixel_auroc": 0.5979479218746753,
+      "num_test": 78,
+      "num_anomalous": 57,
+      "num_normal": 21
+    }
+  }
+}

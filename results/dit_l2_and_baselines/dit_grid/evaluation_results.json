@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "grid": {
+      "image_auroc": 0.4344193817878028,
+      "pixel_auroc": 0.6829226408763636,
+      "num_test": 78,
+      "num_anomalous": 57,
+      "num_normal": 21
+    }
+  }
+}

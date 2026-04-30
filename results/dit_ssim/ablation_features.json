@@ -1,0 +1,78 @@
+{
+  "category": "hazelnut",
+  "t_partial": 250,
+  "core_results": {
+    "pixel_only": {
+      "alpha": 1.0,
+      "image_auroc": 0.5,
+      "pixel_auroc": 0.606933562429059
+    },
+    "combined": {
+      "alpha": 0.5,
+      "image_auroc": 0.3471428571428571,
+      "pixel_auroc": 0.7776751118289376
+    },
+    "feature_only": {
+      "alpha": 0.0,
+      "image_auroc": 0.5,
+      "pixel_auroc": 0.8070036607812962
+    }
+  },
+  "sweep_results": {
+    "0.0": {
+      "alpha": 0.0,
+      "image_auroc": 0.5,
+      "pixel_auroc": 0.8070036607812962
+    },
+    "0.1": {
+      "alpha": 0.1,
+      "image_auroc": 0.41392857142857137,
+      "pixel_auroc": 0.8104860946632674
+    },
+    "0.2": {
+      "alpha": 0.2,
+      "image_auroc": 0.38464285714285706,
+      "pixel_auroc": 0.810872305110726
+    },
+    "0.3": {
+      "alpha": 0.3,
+      "image_auroc": 0.3696428571428571,
+      "pixel_auroc": 0.8065055105861848
+    },
+    "0.4": {
+      "alpha": 0.4,
+      "image_auroc": 0.37392857142857144,
+      "pixel_auroc": 0.7958034473725374
+    },
+    "0.5": {
+      "alpha": 0.5,
+      "image_auroc": 0.3471428571428571,
+      "pixel_auroc": 0.7776751118289376
+    },
+    "0.6": {
+      "alpha": 0.6,
+      "image_auroc": 0.35857142857142854,
+      "pixel_auroc": 0.7519141620513664
+    },
+    "0.7": {
+      "alpha": 0.7,
+      "image_auroc": 0.3657142857142857,
+      "pixel_auroc": 0.7195081455631473
+    },
+    "0.8": {
+      "alpha": 0.8,
+      "image_auroc": 0.3525,
+      "pixel_auroc": 0.6826387327779236
+    },
+    "0.9": {
+      "alpha": 0.9,
+      "image_auroc": 0.32857142857142857,
+      "pixel_auroc": 0.6441881654022509
+    },
+    "1.0": {
+      "alpha": 1.0,
+      "image_auroc": 0.5,
+      "pixel_auroc": 0.606933562429059
+    }
+  }
+}

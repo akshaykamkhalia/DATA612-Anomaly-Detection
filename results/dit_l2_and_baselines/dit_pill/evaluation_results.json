@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "pill": {
+      "image_auroc": 0.6805782869612658,
+      "pixel_auroc": 0.7764767225997902,
+      "num_test": 167,
+      "num_anomalous": 141,
+      "num_normal": 26
+    }
+  }
+}

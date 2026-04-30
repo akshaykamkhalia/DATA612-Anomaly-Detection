@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "capsule",
+    "output_dir": "output/results/baselines_capsule",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "capsule": {
+      "pca": {
+        "image_auroc": 0.6701236537694456,
+        "pixel_auroc": 0.8928687878439052,
+        "num_test": 132,
+        "num_anomalous": 109,
+        "num_normal": 23
+      },
+      "autoencoder": {
+        "image_auroc": 0.581970482648584,
+        "pixel_auroc": 0.8416011812219085,
+        "num_test": 132,
+        "num_anomalous": 109,
+        "num_normal": 23
+      }
+    }
+  }
+}

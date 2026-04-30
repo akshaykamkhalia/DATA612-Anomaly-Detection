@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "screw": {
+      "image_auroc": 0.5597458495593359,
+      "pixel_auroc": 0.8917810775043006,
+      "num_test": 160,
+      "num_anomalous": 119,
+      "num_normal": 41
+    }
+  }
+}

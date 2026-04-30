@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "cable": {
+      "image_auroc": 0.5016866566716641,
+      "pixel_auroc": 0.6296337456486548,
+      "num_test": 150,
+      "num_anomalous": 92,
+      "num_normal": 58
+    }
+  }
+}

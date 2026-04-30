@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "hazelnut",
+    "output_dir": "output/results/baselines_hazelnut",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "hazelnut": {
+      "pca": {
+        "image_auroc": 0.9617857142857142,
+        "pixel_auroc": 0.9388489339745685,
+        "num_test": 110,
+        "num_anomalous": 70,
+        "num_normal": 40
+      },
+      "autoencoder": {
+        "image_auroc": 0.9717857142857144,
+        "pixel_auroc": 0.9336528777025284,
+        "num_test": 110,
+        "num_anomalous": 70,
+        "num_normal": 40
+      }
+    }
+  }
+}

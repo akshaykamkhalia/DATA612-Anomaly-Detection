@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "metal_nut": {
+      "image_auroc": 0.5928641251221897,
+      "pixel_auroc": 0.5814166700088097,
+      "num_test": 115,
+      "num_anomalous": 93,
+      "num_normal": 22
+    }
+  }
+}

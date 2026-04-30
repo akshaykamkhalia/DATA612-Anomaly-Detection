@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\caption{Image- and pixel-level AUROC on MVTec AD (15 categories). DiT-Tiny trained 100 epochs per category on Colab T4 GPU. PatchCore uses pretrained WideResNet50-2 with 10\% random coreset.}
+\label{tab:main_results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Category & \multicolumn{2}{c}{DiT-Tiny (L2)} & \multicolumn{2}{c}{PatchCore} & \multicolumn{2}{c}{PCA} & \multicolumn{2}{c}{Conv-AE} \\
+ & Img & Pix & Img & Pix & Img & Pix & Img & Pix \\
+\midrule
+bottle & 0.458 & 0.846 & 0.000 & 0.000 & 0.909 & 0.844 & 0.790 & 0.785 \\
+cable & 0.502 & 0.630 & 0.000 & 0.000 & 0.583 & 0.783 & 0.628 & 0.720 \\
+capsule & 0.572 & 0.857 & 0.000 & 0.000 & 0.670 & 0.893 & 0.582 & 0.842 \\
+carpet & 0.562 & 0.730 & 0.000 & 0.000 & 0.465 & 0.620 & 0.546 & 0.571 \\
+grid & 0.434 & 0.683 & 0.000 & 0.000 & 0.764 & 0.705 & 0.858 & 0.780 \\
+hazelnut & 0.744 & 0.836 & 0.000 & 0.000 & 0.962 & 0.939 & 0.972 & 0.934 \\
+leather & 0.658 & 0.913 & 0.000 & 0.000 & 0.904 & 0.900 & 0.930 & 0.867 \\
+metal\_nut & 0.593 & 0.581 & 0.000 & 0.000 & 0.531 & 0.821 & 0.454 & 0.734 \\
+pill & 0.681 & 0.776 & 0.000 & 0.000 & 0.577 & 0.868 & 0.577 & 0.796 \\
+screw & 0.560 & 0.892 & 0.000 & 0.000 & 0.721 & 0.883 & 0.825 & 0.910 \\
+tile & 0.593 & 0.775 & 0.000 & 0.000 & 0.683 & 0.551 & 0.668 & 0.493 \\
+toothbrush & 0.367 & 0.763 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 & 0.000 \\
+transistor & 0.533 & 0.580 & 0.000 & 0.000 & 0.698 & 0.814 & 0.640 & 0.614 \\
+wood & 0.745 & 0.777 & 0.000 & 0.000 & 0.832 & 0.694 & 0.953 & 0.676 \\
+zipper & 0.592 & 0.753 & 0.000 & 0.000 & 0.756 & 0.711 & 0.720 & 0.776 \\
+\midrule
+\textbf{Mean} & \textbf{0.573} & \textbf{0.759} & \textbf{0.000} & \textbf{0.000} & \textbf{0.718} & \textbf{0.788} & \textbf{0.724} & \textbf{0.750} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

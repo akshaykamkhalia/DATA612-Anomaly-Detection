@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "carpet",
+    "checkpoint": "output/checkpoints/carpet/best.pt",
+    "output_dir": "output/results/dit_carpet",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "carpet": {
+      "image_auroc": 0.4955858747993579,
+      "pixel_auroc": 0.7126242275886211,
+      "num_test": 117,
+      "num_anomalous": 89,
+      "num_normal": 28
+    }
+  }
+}

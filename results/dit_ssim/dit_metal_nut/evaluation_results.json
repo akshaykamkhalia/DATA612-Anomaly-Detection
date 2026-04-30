@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "metal_nut",
+    "checkpoint": "output/checkpoints/metal_nut/best.pt",
+    "output_dir": "output/results/dit_metal_nut",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "metal_nut": {
+      "image_auroc": 0.4858260019550342,
+      "pixel_auroc": 0.4285556438589211,
+      "num_test": 115,
+      "num_anomalous": 93,
+      "num_normal": 22
+    }
+  }
+}

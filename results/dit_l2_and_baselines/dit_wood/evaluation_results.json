@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "wood": {
+      "image_auroc": 0.7447368421052631,
+      "pixel_auroc": 0.7768415726777241,
+      "num_test": 79,
+      "num_anomalous": 60,
+      "num_normal": 19
+    }
+  }
+}

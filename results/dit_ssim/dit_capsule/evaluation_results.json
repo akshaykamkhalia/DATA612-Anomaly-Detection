@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "capsule",
+    "checkpoint": "output/checkpoints/capsule/best.pt",
+    "output_dir": "output/results/dit_capsule",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "capsule": {
+      "image_auroc": 0.5560430793777424,
+      "pixel_auroc": 0.7690634492916351,
+      "num_test": 132,
+      "num_anomalous": 109,
+      "num_normal": 23
+    }
+  }
+}

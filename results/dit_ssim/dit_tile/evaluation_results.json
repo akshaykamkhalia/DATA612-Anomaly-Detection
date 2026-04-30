@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "tile",
+    "checkpoint": "output/checkpoints/tile/best.pt",
+    "output_dir": "output/results/dit_tile",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "tile": {
+      "image_auroc": 0.5155122655122655,
+      "pixel_auroc": 0.7708990179341652,
+      "num_test": 117,
+      "num_anomalous": 84,
+      "num_normal": 33
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "leather",
+    "output_dir": "output/results/baselines_leather",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "leather": {
+      "pca": {
+        "image_auroc": 0.9042119565217391,
+        "pixel_auroc": 0.9000349557884717,
+        "num_test": 124,
+        "num_anomalous": 92,
+        "num_normal": 32
+      },
+      "autoencoder": {
+        "image_auroc": 0.9296875,
+        "pixel_auroc": 0.8671185468022362,
+        "num_test": 124,
+        "num_anomalous": 92,
+        "num_normal": 32
+      }
+    }
+  }
+}

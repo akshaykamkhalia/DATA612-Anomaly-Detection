@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "pill",
+    "checkpoint": "output/checkpoints/pill/best.pt",
+    "output_dir": "output/results/dit_pill",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "pill": {
+      "image_auroc": 0.5932896890343698,
+      "pixel_auroc": 0.7831170225367562,
+      "num_test": 167,
+      "num_anomalous": 141,
+      "num_normal": 26
+    }
+  }
+}

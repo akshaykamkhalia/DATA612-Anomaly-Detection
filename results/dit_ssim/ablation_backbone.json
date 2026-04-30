@@ -1,0 +1,35 @@
+{
+  "category": "hazelnut",
+  "args": {
+    "data_root": "../data/mvtec",
+    "dit_checkpoint": "output/checkpoints/hazelnut/best.pt",
+    "unet_checkpoint": "output/checkpoints_unet/hazelnut/best.pt",
+    "category": "hazelnut",
+    "output_dir": "output/results",
+    "dit_model": "dit_tiny",
+    "img_size": 128,
+    "batch_size": 16,
+    "timesteps": 1000,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5
+  },
+  "dit": {
+    "backbone": "dit_tiny",
+    "image_auroc": 0.3875,
+    "pixel_auroc": 0.7830302777647433,
+    "params": 4374384,
+    "inference_time_sec": 1.4285,
+    "num_test": 110,
+    "num_anomalous": 70
+  },
+  "unet": {
+    "backbone": "unet",
+    "image_auroc": 0.48392857142857143,
+    "pixel_auroc": 0.9051336141761144,
+    "params": 35841219,
+    "inference_time_sec": 3.2299,
+    "num_test": 110,
+    "num_anomalous": 70
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "toothbrush",
+    "checkpoint": "output/checkpoints/toothbrush/best.pt",
+    "output_dir": "output/results/dit_toothbrush",
+    "model": "tiny",
+    "img_size": 128,
+    "t_partial": 250,
+    "num_ddim_steps": 50,
+    "alpha": 0.5,
+    "batch_size": 8,
+    "timesteps": 1000
+  },
+  "results": {
+    "toothbrush": {
+      "image_auroc": 0.30833333333333335,
+      "pixel_auroc": 0.5972944810261507,
+      "num_test": 42,
+      "num_anomalous": 30,
+      "num_normal": 12
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "capsule": {
+      "image_auroc": 0.5723972875947347,
+      "pixel_auroc": 0.8566378331339339,
+      "num_test": 132,
+      "num_anomalous": 109,
+      "num_normal": 23
+    }
+  }
+}

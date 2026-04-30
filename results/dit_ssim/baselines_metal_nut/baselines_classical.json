@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "metal_nut",
+    "output_dir": "output/results/baselines_metal_nut",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "metal_nut": {
+      "pca": {
+        "image_auroc": 0.5312805474095796,
+        "pixel_auroc": 0.8213680480555854,
+        "num_test": 115,
+        "num_anomalous": 93,
+        "num_normal": 22
+      },
+      "autoencoder": {
+        "image_auroc": 0.4535679374389052,
+        "pixel_auroc": 0.7340989238824374,
+        "num_test": 115,
+        "num_anomalous": 93,
+        "num_normal": 22
+      }
+    }
+  }
+}

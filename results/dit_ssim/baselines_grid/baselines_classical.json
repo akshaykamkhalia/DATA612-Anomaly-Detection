@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "grid",
+    "output_dir": "output/results/baselines_grid",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "grid": {
+      "pca": {
+        "image_auroc": 0.7635756056808689,
+        "pixel_auroc": 0.7049323783923582,
+        "num_test": 78,
+        "num_anomalous": 57,
+        "num_normal": 21
+      },
+      "autoencoder": {
+        "image_auroc": 0.8579782790309106,
+        "pixel_auroc": 0.7804181335112628,
+        "num_test": 78,
+        "num_anomalous": 57,
+        "num_normal": 21
+      }
+    }
+  }
+}

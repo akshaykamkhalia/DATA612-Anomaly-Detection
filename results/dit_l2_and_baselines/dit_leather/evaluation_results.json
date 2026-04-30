@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "leather": {
+      "image_auroc": 0.6576086956521738,
+      "pixel_auroc": 0.9128531046101744,
+      "num_test": 124,
+      "num_anomalous": 92,
+      "num_normal": 32
+    }
+  }
+}

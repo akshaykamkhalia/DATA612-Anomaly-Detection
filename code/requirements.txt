@@ -1,0 +1,17 @@
+# Dependencies for DiT-Based Anomaly Detection
+# Install: pip install -r requirements.txt
+# Tested with Python 3.10+ on Google Colab Free (T4) and Kaggle (P100)
+
+torch>=2.0          # Core DL framework
+torchvision>=0.15   # ResNet-18 for feature scoring
+numpy               # Array ops
+Pillow              # Image I/O
+scikit-learn        # PCA baseline, metrics
+scikit-image        # SSIM (scoring.py uses skimage.metrics.structural_similarity)
+matplotlib          # Plotting, visualize.py
+tqdm                # Progress bars
+lpips               # Optional: LPIPS scoring (ablation_scoring.py)
+tifffile            # .tiff export (export_tiff.py)
+scipy               # Gaussian filter for anomaly maps
+tabulate            # Results table formatting
+anomalib>=1.0       # PatchCore + Reverse Distillation baselines

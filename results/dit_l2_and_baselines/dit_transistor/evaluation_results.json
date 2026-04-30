@@ -1,0 +1,13 @@
+{
+  "scoring": "l2",
+  "t_partial": 250,
+  "results": {
+    "transistor": {
+      "image_auroc": 0.5325000000000001,
+      "pixel_auroc": 0.5802609052647063,
+      "num_test": 100,
+      "num_anomalous": 40,
+      "num_normal": 60
+    }
+  }
+}

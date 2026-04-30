@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_root": "../data/mvtec",
+    "category": "bottle",
+    "output_dir": "output/results/baselines_bottle",
+    "device": "cuda",
+    "ae_epochs": 50,
+    "batch_size": 16,
+    "pca_components": 100,
+    "lr": 0.001,
+    "num_workers": 4
+  },
+  "results": {
+    "bottle": {
+      "pca": {
+        "image_auroc": 0.9087301587301588,
+        "pixel_auroc": 0.8439695575367382,
+        "num_test": 83,
+        "num_anomalous": 63,
+        "num_normal": 20
+      },
+      "autoencoder": {
+        "image_auroc": 0.7904761904761906,
+        "pixel_auroc": 0.7852031928953322,
+        "num_test": 83,
+        "num_anomalous": 63,
+        "num_normal": 20
+      }
+    }
+  }
+}
