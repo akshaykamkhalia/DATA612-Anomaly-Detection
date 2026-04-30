@@ -82,14 +82,12 @@ def train(
     """
     set_seed(seed)
 
-    # Device setup
     if device == "cuda" and not torch.cuda.is_available():
         print("CUDA not available, falling back to CPU")
         device = "cpu"
 
     use_amp = device == "cuda"
 
-    # Data
     print(f"Loading {category} from {data_root}...")
     train_loader, _ = get_dataloaders(
         data_root, category,
@@ -97,11 +95,10 @@ def train(
     )
     print(f"  Train batches: {len(train_loader)} (batch_size={batch_size})")
 
-    # Resolve backbone (backward compatible with model_size)
+    # Preserve older --model values while allowing explicit backbone selection.
     if backbone is None:
         backbone = _MODEL_TO_BACKBONE.get(model_size, "dit_small")
 
-    # Model
     if backbone == "dit_small":
         model = DiT_S(img_size=img_size).to(device)
         backbone_label = "DiT-S"
@@ -118,14 +115,12 @@ def train(
     params = sum(p.numel() for p in model.parameters())
     print(f"  Model: {backbone_label} ({params:,} parameters)")
 
-    # Diffusion
     betas = cosine_beta_schedule(timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
 
-    # Optimizer + scheduler
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    # Warmup + cosine annealing
+    # Linear warmup followed by cosine annealing.
     def lr_lambda(epoch):
         if epoch < warmup_epochs:
             return (epoch + 1) / warmup_epochs
@@ -134,20 +129,16 @@ def train(
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
-    # AMP scaler
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
-    # Checkpoint directory
     ckpt_dir = Path(checkpoint_dir) / category
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    # Loss log
     loss_csv_path = ckpt_dir / "loss.csv"
     with open(loss_csv_path, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["epoch", "loss", "lr", "time_sec"])
 
-    # Training loop
     loss_fn = nn.MSELoss()
     print(f"\nTraining {category} for {epochs} epochs (AMP={'ON' if use_amp else 'OFF'})")
     print("-" * 50)
@@ -164,21 +155,17 @@ def train(
             x_0 = x_0.to(device)
             B = x_0.shape[0]
 
-            # Sample random timesteps
             t = torch.randint(0, timesteps, (B,), device=device, dtype=torch.long)
 
-            # Sample noise
             noise = torch.randn_like(x_0)
 
             # Forward diffusion: x_t = q(x_0, t)
             x_t = diffusion.q_sample(x_0, t, noise)
 
-            # Predict noise
             with torch.amp.autocast("cuda", enabled=use_amp):
                 noise_pred = model(x_t, t)
                 loss = loss_fn(noise_pred, noise)
 
-            # Backprop with AMP
             optimizer.zero_grad()
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
@@ -191,19 +178,16 @@ def train(
 
         scheduler.step()
 
-        # Epoch stats
         avg_loss = epoch_loss / num_batches
         current_lr = optimizer.param_groups[0]["lr"]
         epoch_time = time.time() - epoch_start
 
         print(f"Epoch [{epoch:03d}/{epochs}] | Loss: {avg_loss:.6f} | LR: {current_lr:.2e} | Time: {epoch_time:.1f}s")
 
-        # Log to CSV
         with open(loss_csv_path, "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([epoch, f"{avg_loss:.6f}", f"{current_lr:.2e}", f"{epoch_time:.1f}"])
 
-        # Save best
         if avg_loss < best_loss:
             best_loss = avg_loss
             torch.save({
@@ -217,7 +201,6 @@ def train(
                 "img_size": img_size,
             }, ckpt_dir / "best.pt")
 
-        # Periodic checkpoint
         if epoch % save_every == 0:
             torch.save({
                 "epoch": epoch,
@@ -230,7 +213,6 @@ def train(
                 "img_size": img_size,
             }, ckpt_dir / f"epoch_{epoch:03d}.pt")
 
-    # Save final checkpoint
     torch.save({
         "epoch": epochs,
         "model_state_dict": model.state_dict(),
@@ -274,7 +256,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    # Resolve backbone: explicit --backbone wins; else map --model for compat
+    # Explicit --backbone takes precedence; --model remains for older commands.
     resolved_backbone = args.backbone
     if resolved_backbone is None:
         resolved_backbone = _MODEL_TO_BACKBONE.get(args.model, "dit_small")

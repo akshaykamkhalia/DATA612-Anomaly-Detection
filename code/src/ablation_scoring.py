@@ -100,7 +100,6 @@ def score_with_method(
     for images, x_0_hat, masks, labels in zip(
         originals, reconstructions, masks_list, labels_list,
     ):
-        # Pixel-level map based on method
         if method_name == "ssim":
             pixel_map = compute_pixel_anomaly_map(images, x_0_hat)
         elif method_name == "l2":
@@ -112,20 +111,16 @@ def score_with_method(
         else:
             raise ValueError(f"Unknown method: {method_name}")
 
-        # Feature-level map (same for all methods)
         feat_map = compute_feature_anomaly_map(
             feature_extractor, images, x_0_hat, img_size=img_size,
         )
 
-        # Combine
         combined_map = compute_combined_anomaly_map(pixel_map, feat_map, alpha=alpha)
 
-        # Image-level score
         img_scores = compute_image_score(combined_map)
         all_image_scores.append(img_scores.cpu().numpy())
         all_image_labels.append(labels)
 
-        # Pixel-level
         all_pixel_preds.append(combined_map.cpu().numpy().flatten())
         all_pixel_labels.append(masks.cpu().numpy().flatten())
 
@@ -171,9 +166,6 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # ------------------------------------------------------------------
-    # Load model
-    # ------------------------------------------------------------------
     if args.model == "small":
         model = DiT_S(img_size=args.img_size).to(device)
     else:
@@ -185,16 +177,10 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     print(f"Loaded checkpoint: {args.checkpoint} (epoch {checkpoint['epoch']})")
 
-    # ------------------------------------------------------------------
-    # Diffusion + feature extractor
-    # ------------------------------------------------------------------
     betas = cosine_beta_schedule(args.timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
     feat_extractor = FeatureExtractor().to(device)
 
-    # ------------------------------------------------------------------
-    # Load test data
-    # ------------------------------------------------------------------
     _, test_loader = get_dataloaders(
         args.data_root,
         args.category,
@@ -202,18 +188,12 @@ def main():
         batch_size=args.batch_size,
     )
 
-    # ------------------------------------------------------------------
-    # Reconstruct once
-    # ------------------------------------------------------------------
     print(f"\nCategory: {args.category}")
     originals, reconstructions, masks_list, labels_list = reconstruct_all(
         model, diffusion, test_loader, device,
         t_partial=args.t_partial, num_ddim_steps=args.num_ddim_steps,
     )
 
-    # ------------------------------------------------------------------
-    # Pre-load LPIPS model once
-    # ------------------------------------------------------------------
     try:
         import lpips as lpips_lib
         lpips_model = lpips_lib.LPIPS(net="alex", spatial=True).to(device)
@@ -223,9 +203,6 @@ def main():
         lpips_model = None
         methods = ["ssim", "l2"]
 
-    # ------------------------------------------------------------------
-    # Score with each method
-    # ------------------------------------------------------------------
     results = {}
     for method in methods:
         print(f"\nScoring with {method.upper()} ...")
@@ -245,9 +222,6 @@ def main():
         print(f"  Image AUROC: {res['image_auroc']:.4f}")
         print(f"  Pixel AUROC: {res['pixel_auroc']:.4f}")
 
-    # ------------------------------------------------------------------
-    # Comparison table
-    # ------------------------------------------------------------------
     print(f"\n{'='*50}")
     print(f"Scoring Method Ablation  --  Category: {args.category}")
     print(f"{'='*50}")
@@ -257,9 +231,6 @@ def main():
         r = results[method]
         print(f"{method.upper():<10} {r['image_auroc']:>12.4f} {r['pixel_auroc']:>12.4f}")
 
-    # ------------------------------------------------------------------
-    # Save results
-    # ------------------------------------------------------------------
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / "ablation_scoring.json"

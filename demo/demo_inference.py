@@ -33,7 +33,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
-# Make `import src.*` work — the trained model code lives in code/src/
+# Add the trained model package to the import path for the standalone demo.
 DEMO_DIR = Path(__file__).resolve().parent
 CODE_DIR = DEMO_DIR.parent / "code"
 if str(CODE_DIR) not in sys.path:
@@ -49,7 +49,7 @@ from src.scoring import (  # noqa: E402
     compute_image_score,
 )
 
-# ----- Config (matches the committed evaluation_results.json args) -----
+# Inference settings match the committed evaluation configuration.
 IMG_SIZE = 128
 TIMESTEPS = 1000
 T_PARTIAL = 250
@@ -249,7 +249,6 @@ def classify(image: Union[str, Path, Image.Image, np.ndarray],
     out = score_image(image, category, n_runs=n_runs)
     score = out["score"]
 
-    # Decide threshold
     if threshold is None:
         thresholds = _load_thresholds()
         if category in thresholds:
@@ -261,7 +260,7 @@ def classify(image: Union[str, Path, Image.Image, np.ndarray],
     margin = score - threshold if threshold == threshold else 0.0  # NaN check
     label = "DEFECTIVE" if (threshold == threshold and score > threshold) else \
             ("NORMAL" if threshold == threshold else "UNKNOWN")
-    # Sigmoid on a scaled margin so confidence is calibrated-ish
+    # Scale the threshold margin into a compact confidence value.
     confidence = float(1.0 / (1.0 + np.exp(-10 * margin))) if threshold == threshold else 0.5
 
     amap = out["anomaly_map"]

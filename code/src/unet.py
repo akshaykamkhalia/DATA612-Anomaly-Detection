@@ -64,7 +64,7 @@ class ResBlock(nn.Module):
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
         self.act = nn.SiLU()
 
-        # Time embedding projection -> added after first conv
+        # Project the timestep embedding before adding it to feature maps.
         self.time_proj = nn.Sequential(
             nn.SiLU(),
             nn.Linear(time_dim, out_channels),
@@ -88,7 +88,7 @@ class ResBlock(nn.Module):
         h = self.act(h)
         h = self.conv1(h)
 
-        # Add time embedding (broadcast over spatial dims)
+        # Broadcast timestep conditioning across spatial dimensions.
         t = self.time_proj(t_emb)[:, :, None, None]
         h = h + t
 
@@ -136,7 +136,6 @@ class SelfAttention(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         B, C, H, W = x.shape
         h = self.norm(x)
-        # Reshape to sequence
         h = h.reshape(B, C, H * W).permute(0, 2, 1)  # (B, H*W, C)
         h, _ = self.attn(h, h, h, need_weights=False)
         h = h.permute(0, 2, 1).reshape(B, C, H, W)  # (B, C, H, W)
@@ -170,13 +169,10 @@ class UNet(nn.Module):
         self.img_size = img_size
         self.in_channels = in_channels
 
-        # Timestep embedding
         self.time_embed = TimestepEmbedding(time_dim=time_dim)
 
-        # Initial convolution
         self.conv_in = nn.Conv2d(in_channels, base_channels, kernel_size=3, padding=1)
 
-        # --- Encoder ---
         self.encoder_blocks = nn.ModuleList()
         self.downsamples = nn.ModuleList()
 
@@ -200,14 +196,12 @@ class UNet(nn.Module):
         self.bottleneck_attn = SelfAttention(bottleneck_ch, num_heads=8)
         self.bottleneck_res2 = ResBlock(bottleneck_ch, bottleneck_ch, time_dim)
 
-        # --- Decoder ---
         self.upsamples = nn.ModuleList()
         self.decoder_blocks = nn.ModuleList()
 
         reversed_mults = list(reversed(channel_mults))
         for i in range(len(channel_mults)):
             ch_out = base_channels * reversed_mults[i]
-            # Skip connection doubles input channels
             if i == 0:
                 # First decoder level: upsample from bottleneck, skip from last encoder
                 skip_ch = encoder_channels[-(i + 1)]
@@ -218,7 +212,6 @@ class UNet(nn.Module):
             self.decoder_blocks.append(ResBlock(ch_in + skip_ch, ch_out, time_dim))
             ch_in = ch_out
 
-        # --- Output ---
         self.norm_out = nn.GroupNorm(num_groups=32, num_channels=ch_in)
         self.act_out = nn.SiLU()
         self.conv_out = nn.Conv2d(ch_in, in_channels, kernel_size=3, padding=1)
@@ -238,10 +231,8 @@ class UNet(nn.Module):
         Returns:
             predicted noise (B, 3, 128, 128)
         """
-        # Timestep embedding
         t_emb = self.time_embed(t)
 
-        # Initial conv
         h = self.conv_in(x)
 
         # Encoder (save skip connections)
@@ -251,7 +242,6 @@ class UNet(nn.Module):
             skips.append(h)
             h = down(h)
 
-        # Bottleneck
         h = self.bottleneck_res1(h, t_emb)
         h = self.bottleneck_attn(h)
         h = self.bottleneck_res2(h, t_emb)
@@ -266,7 +256,6 @@ class UNet(nn.Module):
             h = torch.cat([h, skip], dim=1)
             h = res_block(h, t_emb)
 
-        # Output
         h = self.norm_out(h)
         h = self.act_out(h)
         h = self.conv_out(h)

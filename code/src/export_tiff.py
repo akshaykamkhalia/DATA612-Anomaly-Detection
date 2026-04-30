@@ -54,7 +54,6 @@ class MVTecDatasetWithPaths(MVTecDataset):
         if self.split == "train":
             return image
 
-        # Test split: return (image, mask, label, path)
         label = self.labels[idx]
         if self.mask_paths[idx] is not None:
             mask = Image.open(self.mask_paths[idx]).convert("L")
@@ -88,7 +87,6 @@ def get_original_resolution(data_root: str, category: str) -> tuple:
         (height, width) of the original image
     """
     test_dir = Path(data_root) / category / "test"
-    # Find the first .png in any subdirectory
     for subdir in sorted(test_dir.iterdir()):
         if not subdir.is_dir():
             continue
@@ -124,14 +122,13 @@ def derive_tiff_path(
     original = Path(original_path)
     root = Path(data_root)
 
-    # Get relative path from the data root: e.g., hazelnut/test/crack/000.png
+    # Preserve the MVTec category/test/defect path under the export directory.
     try:
         rel_path = original.relative_to(root.resolve())
     except ValueError:
-        # Fallback: try without resolve
+        # Fall back for paths that were already relative to the data root.
         rel_path = original.relative_to(root)
 
-    # Change extension to .tiff
     tiff_path = Path(output_dir) / rel_path.with_suffix(".tiff")
     return tiff_path
 
@@ -178,11 +175,9 @@ def export_category(
     """
     model.eval()
 
-    # Determine original resolution for this category
     orig_h, orig_w = get_original_resolution(data_root, category)
     print(f"  Original resolution: {orig_h}x{orig_w}")
 
-    # Create dataset with paths
     test_ds = MVTecDatasetWithPaths(
         data_root, category, split="test", img_size=img_size, augment=False
     )
@@ -200,30 +195,23 @@ def export_category(
     for images, masks, labels, paths in tqdm(test_loader, desc=f"  Exporting {category}"):
         images = images.to(device)
 
-        # Reconstruct via DDIM
         with torch.no_grad():
             x_0_hat = diffusion.reconstruct(
                 model, images, t_partial=t_partial, num_ddim_steps=num_ddim_steps
             )
 
-        # Compute anomaly maps at model resolution
         pixel_map = compute_pixel_anomaly_map(images, x_0_hat)
         feat_map = compute_feature_anomaly_map(
             feature_extractor, images, x_0_hat, img_size=img_size
         )
         combined_map = compute_combined_anomaly_map(pixel_map, feat_map, alpha=alpha)
-        # combined_map shape: (B, 1, img_size, img_size)
 
-        # Upsample to original MVTec resolution
         combined_map_upsampled = F.interpolate(
             combined_map,
             size=(orig_h, orig_w),
             mode="bilinear",
             align_corners=False,
         )
-        # Shape: (B, 1, orig_h, orig_w)
-
-        # Save each image's anomaly map as .tiff
         for i, path_str in enumerate(paths):
             anomaly_np = combined_map_upsampled[i, 0].cpu().numpy().astype(np.float32)
 
@@ -306,14 +294,12 @@ def run_mvtec_evaluation(
         print(f"ERROR: Failed to run evaluation script: {e}")
         return {}
 
-    # Parse output JSON
     metrics_path = Path(results_dir) / "metrics.json"
     if metrics_path.exists():
         with open(metrics_path, "r") as f:
             metrics = json.load(f)
         print(f"\nEvaluation results loaded from {metrics_path}")
 
-        # Print summary
         if "mean_au_pro" in metrics:
             print(f"  Mean AU-PRO: {metrics['mean_au_pro']:.4f}")
         if "mean_classification_au_roc" in metrics:
@@ -397,7 +383,6 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # Load model
     if args.model == "small":
         model = DiT_S(img_size=args.img_size).to(device)
     else:
@@ -407,20 +392,16 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     print(f"Loaded checkpoint: {args.checkpoint} (epoch {checkpoint.get('epoch', '?')})")
 
-    # Diffusion
     betas = cosine_beta_schedule(args.timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
 
-    # Feature extractor
     feat_extractor = FeatureExtractor().to(device)
 
-    # Determine categories
     if args.category is not None:
         categories = [args.category]
     else:
         categories = list(MVTEC_CATEGORIES)
 
-    # Export .tiff files for each category
     total_exported = 0
     for cat in categories:
         print(f"\n{'='*50}")
@@ -447,7 +428,6 @@ def main():
     print(f"Total exported: {total_exported} .tiff files")
     print(f"Output directory: {args.output_dir}")
 
-    # Run official MVTec evaluation if requested
     if args.run_eval:
         print(f"\n{'='*50}")
         print("Running official MVTec AD evaluation...")

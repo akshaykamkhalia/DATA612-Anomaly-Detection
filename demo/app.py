@@ -23,7 +23,6 @@ from demo_inference import (
     _get_model, _get_diffusion, _get_feature_extractor,
 )
 
-# ---------- Page config ----------
 st.set_page_config(
     page_title="DiT Anomaly Detection",
     page_icon="🔬",
@@ -31,7 +30,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ---------- Custom CSS for polish ----------
 st.markdown(
     """
 <style>
@@ -100,7 +98,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---------- Constants ----------
 THRESHOLDS_PATH = DEMO_DIR / "thresholds.json"
 SAMPLES_DIR = DEMO_DIR / "sample_images"
 
@@ -182,12 +179,10 @@ def score_distribution_chart(category: str, query_score: float) -> go.Figure:
         marker_color="rgba(239, 68, 68, 0.7)",
         nbinsx=30, opacity=0.85,
     ))
-    # Threshold line
     fig.add_vline(x=threshold, line_dash="dash", line_color="#a78bfa",
                   annotation_text=f"threshold {threshold:.3f}",
                   annotation_position="top right",
                   annotation_font_color="#c4b5fd")
-    # Query marker
     fig.add_vline(x=query_score, line_color="#fbbf24", line_width=3,
                   annotation_text=f"this image: {query_score:.3f}",
                   annotation_position="top left",
@@ -242,7 +237,6 @@ def confidence_gauge(score: float, threshold: float, label: str) -> go.Figure:
     return fig
 
 
-# ---------- Header ----------
 st.markdown(
     "<h1 style='margin-bottom:0'>🔬 DiT Anomaly Detection</h1>"
     "<p style='margin-top:0; opacity:0.7'>"
@@ -251,13 +245,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ---------- Sidebar: category + samples + config ----------
 all_ckpts = available_categories()
 thresholds_dict = load_thresholds()
-# Only categories with BOTH a checkpoint and a computed threshold are demo-ready.
+# Demo-ready categories need both a checkpoint and calibrated threshold.
 ready = [c for c in all_ckpts if c in thresholds_dict and
          thresholds_dict[c].get("auroc") is not None]
-# Sort by AUROC descending so the strongest demo categories surface first.
 cats = sorted(ready, key=lambda c: -thresholds_dict[c]["auroc"])
 pending = [c for c in all_ckpts if c not in cats]
 
@@ -329,11 +321,9 @@ with st.sidebar:
     st.markdown(f"<small>Device: <code>{DEVICE}</code></small>",
                 unsafe_allow_html=True)
 
-# ---------- Warm up models on first render ----------
 with st.spinner(f"Loading {len(cats)} model(s) into VRAM..."):
     warm_models(tuple(cats))
 
-# ---------- Upload area ----------
 st.markdown("### Drop or pick an image")
 upload = st.file_uploader(
     "PNG or JPG of the chosen product",
@@ -341,7 +331,6 @@ upload = st.file_uploader(
     label_visibility="collapsed",
 )
 
-# Decide which image to score
 image_path = None
 image_pil = None
 if chosen is not None:
@@ -356,13 +345,11 @@ else:
             icon="👆")
     st.stop()
 
-# ---------- Run inference ----------
 with st.spinner(f"Running {n_runs}-pass DDIM reconstruction on {DEVICE}..."):
     t0 = time.time()
     result = classify(image_pil, category=category, n_runs=n_runs)
     elapsed = time.time() - t0
 
-# ---------- Verdict banner ----------
 render_verdict(
     label=result["label"],
     score=result["score"],
@@ -370,7 +357,6 @@ render_verdict(
     confidence=result["confidence"],
 )
 
-# ---------- Metrics row ----------
 m1, m2, m3 = st.columns(3)
 m1.metric("Score", f"{result['score']:.3f}")
 m2.metric("Threshold", f"{result['threshold']:.3f}")
@@ -378,7 +364,6 @@ m3.metric("Inference time", f"{elapsed:.2f}s")
 
 st.markdown("---")
 
-# ---------- 4-panel image grid ----------
 st.markdown("### Reconstruction & localization")
 g1, g2, g3, g4 = st.columns(4)
 
@@ -418,7 +403,6 @@ with g4:
 
 st.markdown("---")
 
-# ---------- Score-context charts ----------
 st.markdown("### Score in context")
 c1, c2 = st.columns([2, 1])
 
@@ -440,7 +424,6 @@ with c2:
         "Confidence in the verdict — sigmoid of the margin from the threshold."
     )
 
-# ---------- Run details (collapsed) ----------
 with st.expander("Run details"):
     st.json({
         "category": category,

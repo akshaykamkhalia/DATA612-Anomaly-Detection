@@ -129,7 +129,6 @@ def visualize_batch(
 
 
 if __name__ == "__main__":
-    # Smoke test with random data
     B, C, H, W = 2, 3, 128, 128
     orig = torch.randn(B, C, H, W)
     recon = orig + 0.1 * torch.randn_like(orig)

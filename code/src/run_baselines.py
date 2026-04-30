@@ -19,10 +19,7 @@ import sys
 import time
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Anomalib imports -- try v1.x first, fall back to v0.x
-# ---------------------------------------------------------------------------
-
+# Try Anomalib v1.x first, then fall back to v0.x.
 _ANOMALIB_VERSION = None
 
 try:
@@ -37,7 +34,6 @@ except ImportError:
     )
     sys.exit(1)
 
-# --- v1.x imports ----------------------------------------------------------
 _USE_V1 = True
 try:
     from anomalib.data import MVTec  # v1.x datamodule
@@ -46,7 +42,6 @@ try:
 except ImportError:
     _USE_V1 = False
 
-# --- v0.x fallback ---------------------------------------------------------
 if not _USE_V1:
     try:
         from anomalib.data import MVTec  # same in some v0.x builds
@@ -96,10 +91,6 @@ except ImportError:
     print("ERROR: tabulate is not installed.  pip install tabulate")
     sys.exit(1)
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
 MVTEC_CATEGORIES = [
     "bottle", "cable", "capsule", "carpet", "grid",
     "hazelnut", "leather", "metal_nut", "pill", "screw",
@@ -113,10 +104,6 @@ _DEFAULT_DATA_ROOT = str(Path(__file__).resolve().parents[1] / "data" / "mvtec")
 
 # Output directory for saved results.
 _OUTPUT_DIR = Path(__file__).resolve().parents[1] / "output" / "results"
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _build_datamodule(category: str, data_root: str, img_size: int = 256):
@@ -166,7 +153,7 @@ def _extract_metrics(test_results) -> dict:
     img_auroc = None
     pix_auroc = None
 
-    # --- Pattern 1: list of dicts (v1.x Engine.test()) ---
+    # Engine.test may return a list of metric dictionaries.
     if isinstance(test_results, list):
         for entry in test_results:
             if isinstance(entry, dict):
@@ -177,7 +164,7 @@ def _extract_metrics(test_results) -> dict:
                     if "pixel_auroc" in k or "pixel-level" in k.replace(" ", ""):
                         pix_auroc = float(val)
 
-    # --- Pattern 2: single dict ---
+    # Some versions return a single metric dictionary instead.
     elif isinstance(test_results, dict):
         for key, val in test_results.items():
             k = key.lower()
@@ -210,7 +197,7 @@ def _run_single(
     t0 = time.time()
 
     if Engine is not None:
-        # ---- v1.x path (Engine) ----
+        # Anomalib v1.x uses Engine.
         engine = Engine(
             max_epochs=max_epochs,
             accelerator=accelerator,
@@ -222,7 +209,7 @@ def _run_single(
         engine.fit(model=model, datamodule=datamodule)
         test_results = engine.test(model=model, datamodule=datamodule)
     else:
-        # ---- v0.x fallback (pytorch-lightning Trainer) ----
+        # Anomalib v0.x falls back to the Lightning Trainer API.
         from pytorch_lightning import Trainer
 
         trainer = Trainer(
@@ -249,10 +236,6 @@ def _run_single(
     )
     return metrics
 
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 
 def main() -> None:
@@ -299,7 +282,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Resolve categories.
     if args.category.lower() == "all":
         categories = MVTEC_CATEGORIES
     else:
@@ -310,7 +292,6 @@ def main() -> None:
             )
         categories = [cat]
 
-    # Resolve methods.
     if args.method == "all":
         methods = ["patchcore", "reverse_distillation"]
     else:
@@ -323,7 +304,6 @@ def main() -> None:
     print(f"Image size       : {args.img_size}")
     print(f"Data root        : {args.data_root}")
 
-    # ---- Run experiments ----
     all_results: list[dict] = []
 
     for method in methods:
@@ -350,14 +330,12 @@ def main() -> None:
                     }
                 )
 
-    # ---- Save JSON ----
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(all_results, f, indent=2)
     print(f"\nResults saved to {output_path}")
 
-    # ---- Print tables ----
     for method in methods:
         rows = [r for r in all_results if r["method"] == method]
         if not rows:

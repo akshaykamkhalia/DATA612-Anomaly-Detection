@@ -56,7 +56,6 @@ class MVTecDataset(Dataset):
         self.split = split
         self.img_size = img_size
 
-        # Build file lists
         self.image_paths = []
         self.mask_paths = []
         self.labels = []  # 0 = normal, 1 = anomalous
@@ -85,7 +84,6 @@ class MVTecDataset(Dataset):
                         self.mask_paths.append(mask_file if mask_file.exists() else None)
                         self.labels.append(1)
 
-        # Transforms
         if split == "train" and augment:
             self.transform = transforms.Compose([
                 transforms.Resize((img_size, img_size)),
@@ -117,7 +115,6 @@ class MVTecDataset(Dataset):
         if self.split == "train":
             return image
 
-        # Test split: return (image, mask, label)
         label = self.labels[idx]
         if self.mask_paths[idx] is not None:
             mask = Image.open(self.mask_paths[idx]).convert("L")
@@ -172,7 +169,6 @@ def get_dataloaders(
 
 
 if __name__ == "__main__":
-    # Quick smoke test
     import sys
 
     root = sys.argv[1] if len(sys.argv) > 1 else "data/mvtec"
@@ -189,7 +185,6 @@ if __name__ == "__main__":
     print(f"  Test anomalous: {sum(test_ds.labels)}")
     print(f"  Test normal:    {len(test_ds) - sum(test_ds.labels)}")
 
-    # Check shapes
     img = train_ds[0]
     print(f"\n  Train image shape: {img.shape}")
     print(f"  Train image range: [{img.min():.2f}, {img.max():.2f}]")
