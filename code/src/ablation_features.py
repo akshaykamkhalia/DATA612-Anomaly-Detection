@@ -1,17 +1,4 @@
-"""
-Ablation study: Feature-level scoring (pixel-only vs combined vs feature-only).
 
-Reconstructs test images once, computes pixel (SSIM) and feature (ResNet-18)
-maps once, then evaluates at multiple alpha values.
-
-Usage:
-    python -m src.ablation_features --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt
-
-    # Alpha sweep with plot
-    python -m src.ablation_features --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt --sweep
-"""
 
 import argparse
 import json
