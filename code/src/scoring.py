@@ -29,7 +29,6 @@ class FeatureExtractor(nn.Module):
         self.layer2 = resnet.layer2
         self.layer3 = resnet.layer3
 
-        # Freeze all parameters
         for param in self.parameters():
             param.requires_grad = False
 
@@ -44,7 +43,7 @@ class FeatureExtractor(nn.Module):
         Returns:
             list of 3 feature maps at different scales
         """
-        # Denormalize from [-1,1] to ImageNet normalization
+        # Convert training-normalized inputs to ImageNet statistics for VGG.
         mean = torch.tensor([0.485, 0.456, 0.406], device=x.device).view(1, 3, 1, 1)
         std = torch.tensor([0.229, 0.224, 0.225], device=x.device).view(1, 3, 1, 1)
         x = (x + 1.0) / 2.0  # [-1,1] -> [0,1]
@@ -122,7 +121,6 @@ def compute_pixel_anomaly_map_lpips(
         lpips_model = lpips_lib.LPIPS(net='alex', spatial=True).to(original.device)
     with torch.no_grad():
         dist = lpips_model(original, reconstruction)
-    # Upsample to input resolution
     if dist.shape[-2:] != original.shape[-2:]:
         dist = F.interpolate(dist, size=original.shape[-2:], mode='bilinear', align_corners=False)
     return dist
@@ -157,7 +155,6 @@ def compute_feature_anomaly_map(
         diff = F.interpolate(diff, size=(img_size, img_size), mode="bilinear", align_corners=False)
         anomaly_maps.append(diff)
 
-    # Average across layers
     combined = torch.stack(anomaly_maps, dim=0).mean(dim=0)
     return combined
 
@@ -178,7 +175,7 @@ def compute_combined_anomaly_map(
     Returns:
         combined: (B, 1, H, W) combined anomaly map
     """
-    # Normalize each to [0, 1] per image
+    # Normalize per image so pixel and feature maps share a comparable scale.
     B = pixel_map.shape[0]
     pixel_norm = pixel_map.clone()
     feature_norm = feature_map.clone()
@@ -211,7 +208,6 @@ def compute_image_score(anomaly_map: torch.Tensor) -> torch.Tensor:
 
 
 if __name__ == "__main__":
-    # Smoke test
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
@@ -219,12 +215,10 @@ if __name__ == "__main__":
     original = torch.randn(B, C, H, W, device=device)
     recon = original + 0.1 * torch.randn_like(original)  # slight perturbation
 
-    # Pixel scoring
     pixel_map = compute_pixel_anomaly_map(original, recon)
     print(f"Pixel anomaly map shape: {pixel_map.shape}")
     print(f"Pixel anomaly map range: [{pixel_map.min():.4f}, {pixel_map.max():.4f}]")
 
-    # Feature scoring
     feat_extractor = FeatureExtractor().to(device)
     feat_map = compute_feature_anomaly_map(feat_extractor, original, recon, img_size=H)
     print(f"Feature anomaly map shape: {feat_map.shape}")
@@ -233,16 +227,13 @@ if __name__ == "__main__":
     combined_map = compute_combined_anomaly_map(pixel_map, feat_map, alpha=0.5)
     print(f"Combined anomaly map shape: {combined_map.shape}")
 
-    # Image scores
     scores = compute_image_score(combined_map)
     print(f"Image scores: {scores}")
 
-    # L2 pixel anomaly map
     l2_map = compute_pixel_anomaly_map_l2(original, recon)
     print(f"\nL2 anomaly map shape: {l2_map.shape}")
     print(f"L2 anomaly map range: [{l2_map.min():.4f}, {l2_map.max():.4f}]")
 
-    # LPIPS pixel anomaly map
     try:
         lpips_map = compute_pixel_anomaly_map_lpips(original, recon)
         print(f"LPIPS anomaly map shape: {lpips_map.shape}")

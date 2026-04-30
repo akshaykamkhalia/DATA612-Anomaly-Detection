@@ -25,9 +25,6 @@ from tqdm import tqdm
 
 from src.dataset import get_dataloaders, get_mvtec_categories
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
 
 MVTEC_CATEGORIES = [
     "bottle", "cable", "capsule", "carpet", "grid",
@@ -39,9 +36,6 @@ IMG_SIZE = 128
 IMG_CHANNELS = 3
 
 
-# ===================================================================
-# PCA Baseline
-# ===================================================================
 
 class PCABaseline:
     """
@@ -54,8 +48,6 @@ class PCABaseline:
     def __init__(self, n_components: int = 100):
         self.n_components = n_components
         self.pca = PCA(n_components=n_components)
-
-    # ---- helpers ----
 
     @staticmethod
     def _loader_to_flat_numpy(loader, is_train: bool = True) -> np.ndarray:
@@ -85,8 +77,6 @@ class PCABaseline:
             all_labels.append(labels.numpy() if isinstance(labels, torch.Tensor) else np.array(labels))
         return np.concatenate(all_masks, axis=0), np.concatenate(all_labels, axis=0)
 
-    # ---- main API ----
-
     def fit(self, train_loader):
         """Fit PCA on normal training images."""
         X_train = self._loader_to_flat_numpy(train_loader, is_train=True)
@@ -104,7 +94,6 @@ class PCABaseline:
         X_test = self._loader_to_flat_numpy(test_loader, is_train=False)
         masks, labels = self._collect_test_labels(test_loader)
 
-        # Reconstruct
         Z = self.pca.transform(X_test)
         X_recon = self.pca.inverse_transform(Z)
 
@@ -116,9 +105,6 @@ class PCABaseline:
         return anomaly_maps, masks, labels
 
 
-# ===================================================================
-# Convolutional Autoencoder Baseline
-# ===================================================================
 
 class ConvAutoencoder(nn.Module):
     """
@@ -228,9 +214,6 @@ def ae_predict(
     return anomaly_maps, masks, labels
 
 
-# ===================================================================
-# Evaluation helpers
-# ===================================================================
 
 def compute_aurocs(anomaly_maps: np.ndarray, masks: np.ndarray, labels: np.ndarray):
     """Compute image-level and pixel-level AUROC.
@@ -267,9 +250,6 @@ def compute_aurocs(anomaly_maps: np.ndarray, masks: np.ndarray, labels: np.ndarr
     }
 
 
-# ===================================================================
-# CLI
-# ===================================================================
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -390,7 +370,6 @@ def run_category(
 
     cat_results = {}
 
-    # ---- PCA ----
     print(f"\n[PCA] Fitting with {pca_components} components ...")
     pca_baseline = PCABaseline(n_components=pca_components)
     pca_baseline.fit(train_loader)
@@ -400,7 +379,6 @@ def run_category(
     print(f"[PCA]  Image AUROC: {pca_metrics['image_auroc']:.4f}")
     print(f"[PCA]  Pixel AUROC: {pca_metrics['pixel_auroc']:.4f}")
 
-    # ---- ConvAutoencoder ----
     print(f"\n[AE] Training ConvAutoencoder for {ae_epochs} epochs ...")
     ae_model = ConvAutoencoder()
     ae_model = train_autoencoder(ae_model, train_loader, device=device,
@@ -417,20 +395,17 @@ def run_category(
 def main():
     args = parse_args()
 
-    # Device selection
     if args.device is not None:
         device = args.device
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # Determine categories
     if args.category is None or args.category.lower() == "all":
         categories = get_mvtec_categories()
     else:
         categories = [args.category]
 
-    # Run baselines
     results = {}
     for cat in categories:
         cat_results = run_category(
@@ -445,7 +420,6 @@ def main():
         )
         results[cat] = cat_results
 
-    # Compute averages if multiple categories
     if len(categories) > 1:
         pca_img = np.mean([r["pca"]["image_auroc"] for r in results.values()])
         pca_pix = np.mean([r["pca"]["pixel_auroc"] for r in results.values()])
@@ -458,13 +432,11 @@ def main():
             "ae_pixel_auroc": float(ae_pix),
         }
 
-    # Print table
     print(f"\n\n{'='*60}")
     print("CLASSICAL BASELINE RESULTS")
     print(f"{'='*60}")
     print(format_table(results))
 
-    # Save JSON
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / "baselines_classical.json"

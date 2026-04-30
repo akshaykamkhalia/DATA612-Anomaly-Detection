@@ -51,13 +51,11 @@ def measure_inference_time(
     """
     model.eval()
     with torch.no_grad():
-        # Warmup
         for _ in range(warmup_runs):
             diffusion.reconstruct(
                 model, sample_input, t_partial=t_partial, num_ddim_steps=num_ddim_steps,
             )
 
-        # Timed
         if device == "cuda":
             torch.cuda.synchronize()
         start = time.time()
@@ -114,26 +112,21 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # Diffusion
     betas = cosine_beta_schedule(args.timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
 
-    # Feature extractor (shared)
     feat_extractor = FeatureExtractor().to(device)
 
-    # Data
     _, test_loader = get_dataloaders(
         args.data_root, args.category,
         img_size=args.img_size, batch_size=args.batch_size,
     )
 
-    # Get a sample batch for inference timing
     sample_batch = None
     for images, _, _ in test_loader:
         sample_batch = images[:4].to(device)
         break
 
-    # --- Evaluate DiT ---
     print(f"\n{'='*60}")
     print(f"Loading DiT ({args.dit_model}) from {args.dit_checkpoint}")
     dit_model = load_model(args.dit_model, args.dit_checkpoint, args.img_size, device)
@@ -155,7 +148,6 @@ def main():
     if device == "cuda":
         torch.cuda.empty_cache()
 
-    # --- Evaluate UNet ---
     print(f"\n{'='*60}")
     print(f"Loading UNet from {args.unet_checkpoint}")
     unet_model = load_model("unet", args.unet_checkpoint, args.img_size, device)
@@ -177,7 +169,6 @@ def main():
     if device == "cuda":
         torch.cuda.empty_cache()
 
-    # --- Comparison Table ---
     print(f"\n{'='*60}")
     print(f"Backbone Ablation Results -- Category: {args.category}")
     print(f"{'='*60}")
@@ -197,7 +188,6 @@ def main():
     )
     print(sep)
 
-    # --- Save results ---
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / "ablation_backbone.json"

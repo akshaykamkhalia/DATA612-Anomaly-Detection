@@ -60,10 +60,9 @@ def evaluate_category(
         images = images.to(device)
         masks = masks.to(device)
 
-        # Reconstruct
         x_0_hat = diffusion.reconstruct(model, images, t_partial=t_partial, num_ddim_steps=num_ddim_steps)
 
-        # Pixel anomaly map: L2 (default, faster + better image AUROC) or SSIM
+        # L2 is the primary scoring mode; SSIM is kept for comparison.
         if scoring == "l2":
             pixel_map = compute_pixel_anomaly_map_l2(images, x_0_hat)
         else:
@@ -72,28 +71,25 @@ def evaluate_category(
         feat_map = compute_feature_anomaly_map(feature_extractor, images, x_0_hat, img_size=img_size)
         combined_map = compute_combined_anomaly_map(pixel_map, feat_map, alpha=alpha)
 
-        # Image-level score: 95th percentile (robust, avoids outlier sensitivity of max)
+        # The 95th percentile avoids the outlier sensitivity of a max score.
         img_scores = compute_image_score(combined_map)
 
         all_image_scores.append(img_scores.cpu().numpy())
         all_image_labels.append(labels.numpy())
 
-        # Pixel-level
         feat_flat = combined_map.cpu().numpy().flatten()
         mask_flat = masks.cpu().numpy().flatten()
         all_pixel_preds.append(feat_flat)
         all_pixel_labels.append(mask_flat)
 
-    # Concatenate
     all_image_scores = np.concatenate(all_image_scores)
     all_image_labels = np.concatenate(all_image_labels)
     all_pixel_preds = np.concatenate(all_pixel_preds)
     all_pixel_labels = np.concatenate(all_pixel_labels)
 
-    # Compute metrics
     image_auroc = roc_auc_score(all_image_labels, all_image_scores)
 
-    # Pixel AUROC (only if there are both classes)
+    # Pixel AUROC is defined only when both pixel classes are present.
     pixel_auroc = 0.0
     if len(np.unique(all_pixel_labels)) > 1:
         pixel_auroc = roc_auc_score(all_pixel_labels.astype(int), all_pixel_preds)
@@ -129,7 +125,6 @@ def main():
     args = parse_args()
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Load model
     if args.model == "small":
         model = DiT_S(img_size=args.img_size).to(device)
     else:
@@ -139,20 +134,16 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     print(f"Loaded checkpoint: {args.checkpoint} (epoch {checkpoint['epoch']})")
 
-    # Diffusion
     betas = cosine_beta_schedule(args.timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
 
-    # Feature extractor
     feat_extractor = FeatureExtractor().to(device)
 
-    # Determine categories
     if args.category is None or args.category == "all":
         categories = get_mvtec_categories()
     else:
         categories = [args.category]
 
-    # Evaluate
     results = {}
     for cat in categories:
         print(f"\n{'='*40}")
@@ -173,7 +164,6 @@ def main():
         print(f"  Image AUROC: {cat_results['image_auroc']:.4f}")
         print(f"  Pixel AUROC: {cat_results['pixel_auroc']:.4f}")
 
-    # Summary
     if len(categories) > 1:
         avg_image = np.mean([r["image_auroc"] for r in results.values()])
         avg_pixel = np.mean([r["pixel_auroc"] for r in results.values()])
@@ -182,7 +172,6 @@ def main():
         print(f"Average Image AUROC: {avg_image:.4f}")
         print(f"Average Pixel AUROC: {avg_pixel:.4f}")
 
-    # Save results
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / "evaluation_results.json"

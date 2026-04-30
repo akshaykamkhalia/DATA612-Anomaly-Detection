@@ -160,9 +160,6 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # ------------------------------------------------------------------
-    # Load model
-    # ------------------------------------------------------------------
     if args.model == "small":
         model = DiT_S(img_size=args.img_size).to(device)
     else:
@@ -174,16 +171,10 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     print(f"Loaded checkpoint: {args.checkpoint} (epoch {checkpoint['epoch']})")
 
-    # ------------------------------------------------------------------
-    # Diffusion + feature extractor
-    # ------------------------------------------------------------------
     betas = cosine_beta_schedule(args.timesteps)
     diffusion = GaussianDiffusion(betas, device=device)
     feat_extractor = FeatureExtractor().to(device)
 
-    # ------------------------------------------------------------------
-    # Load test data
-    # ------------------------------------------------------------------
     _, test_loader = get_dataloaders(
         args.data_root,
         args.category,
@@ -191,9 +182,6 @@ def main():
         batch_size=args.batch_size,
     )
 
-    # ------------------------------------------------------------------
-    # Reconstruct and compute maps once
-    # ------------------------------------------------------------------
     print(f"\nCategory: {args.category}")
     pixel_maps, feat_maps, masks_list, labels_list = reconstruct_and_compute_maps(
         model, diffusion, test_loader, feat_extractor, device,
@@ -201,9 +189,6 @@ def main():
         img_size=args.img_size,
     )
 
-    # ------------------------------------------------------------------
-    # Core three-way comparison
-    # ------------------------------------------------------------------
     core_alphas = {
         "pixel_only": 1.0,
         "combined": 0.5,
@@ -226,9 +211,6 @@ def main():
             f"{r['image_auroc']:>12.4f} {r['pixel_auroc']:>12.4f}"
         )
 
-    # ------------------------------------------------------------------
-    # Optional sweep
-    # ------------------------------------------------------------------
     sweep_results = None
     if args.sweep:
         print(f"\nRunning alpha sweep (0.0 to 1.0, step 0.1) ...")
@@ -245,7 +227,6 @@ def main():
                 f"Pixel AUROC={res['pixel_auroc']:.4f}"
             )
 
-        # Plot
         fig_dir = Path(args.output_dir) / "figures"
         fig_dir.mkdir(parents=True, exist_ok=True)
 
@@ -269,9 +250,6 @@ def main():
         plt.close(fig)
         print(f"Sweep plot saved to {fig_path}")
 
-    # ------------------------------------------------------------------
-    # Save results
-    # ------------------------------------------------------------------
     results_dir = Path(args.output_dir) / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
     out_path = results_dir / "ablation_features.json"

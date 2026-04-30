@@ -43,7 +43,7 @@ class GaussianDiffusion:
         self.timesteps = len(betas)
         self.device = device
 
-        # Precompute schedule quantities
+        # Precompute the schedule terms reused by forward and reverse diffusion.
         betas = betas.float()
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
@@ -122,10 +122,8 @@ class GaussianDiffusion:
 
             t_batch = torch.full((x.shape[0],), t_cur, device=self.device, dtype=torch.long)
 
-            # Predict noise
             predicted_noise = model(x, t_batch)
 
-            # Get alpha values
             alpha_bar_t = self.alphas_cumprod[t_cur]
             alpha_bar_t_prev = self.alphas_cumprod[t_prev] if t_prev > 0 else torch.tensor(1.0, device=self.device)
 
@@ -181,11 +179,9 @@ class GaussianDiffusion:
         batch_size = x_0.shape[0]
         t = torch.full((batch_size,), t_partial - 1, device=self.device, dtype=torch.long)
 
-        # Forward: add noise
         noise = torch.randn_like(x_0)
         x_t = self.q_sample(x_0, t, noise)
 
-        # Reverse: DDIM denoise
         x_0_hat = self.ddim_sample(model, x_t, t_start=t_partial - 1, num_steps=num_ddim_steps)
 
         return x_0_hat

@@ -96,7 +96,6 @@ def compute(category: str, n_repeats: int = 5) -> dict:
     # 95th percentile of NORMAL scores: a more conservative alternative
     p95_normal = float(np.percentile(scores[labels == 0], 95)) if n_good > 0 else float("nan")
 
-    # Distributions
     s_good = scores[labels == 0]
     s_bad = scores[labels == 1]
 
@@ -142,7 +141,7 @@ def main():
     print(f"Device: {DEVICE}")
     print(f"Categories with checkpoints: {cats}")
 
-    # Load existing if any -> only recompute missing/forced
+    # Reuse existing thresholds unless recomputation was requested.
     existing = {}
     if OUT_PATH.exists():
         existing = json.loads(OUT_PATH.read_text())

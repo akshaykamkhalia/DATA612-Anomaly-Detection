@@ -96,7 +96,7 @@ class DiTBlock(nn.Module):
             nn.Linear(hidden_size, 6 * hidden_size),
         )
 
-        # Initialize gate projections to zero (AdaLN-Zero)
+        # Zero gates make each block start as an identity-style residual path.
         nn.init.zeros_(self.adaLN_modulation[1].weight)
         nn.init.zeros_(self.adaLN_modulation[1].bias)
 
@@ -175,24 +175,19 @@ class DiT(nn.Module):
         self.in_channels = in_channels
         self.num_patches = (img_size // patch_size) ** 2
 
-        # Patch embedding
         self.patch_embed = PatchEmbed(img_size, patch_size, in_channels, hidden_size)
 
-        # Positional embedding (learnable)
         self.pos_embed = nn.Parameter(
             torch.zeros(1, self.num_patches, hidden_size)
         )
 
-        # Timestep embedding
         self.time_embed = TimestepEmbedder(hidden_size)
 
-        # Transformer blocks
         self.blocks = nn.ModuleList([
             DiTBlock(hidden_size, num_heads, mlp_ratio)
             for _ in range(depth)
         ])
 
-        # Final layer
         self.final_layer = FinalLayer(hidden_size, patch_size, in_channels)
 
         self._initialize_weights()
@@ -202,7 +197,6 @@ class DiT(nn.Module):
         # Positional embedding: truncated normal
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
-        # Patch embedding
         w = self.patch_embed.proj.weight.data
         nn.init.xavier_uniform_(w.view(w.shape[0], -1))
         nn.init.zeros_(self.patch_embed.proj.bias)
@@ -213,7 +207,6 @@ class DiT(nn.Module):
                 nn.init.normal_(layer.weight, std=0.02)
                 nn.init.zeros_(layer.bias)
 
-        # Transformer blocks
         for block in self.blocks:
             # Attention output projection
             nn.init.xavier_uniform_(block.attn.in_proj_weight)
@@ -249,17 +242,13 @@ class DiT(nn.Module):
         Returns:
             predicted noise (B, 3, img_size, img_size)
         """
-        # Patchify + position embed
         x = self.patch_embed(x) + self.pos_embed
 
-        # Timestep conditioning
         c = self.time_embed(t)
 
-        # Transformer blocks
         for block in self.blocks:
             x = block(x, c)
 
-        # Final projection + unpatchify
         x = self.final_layer(x, c)
         x = self.unpatchify(x)
 
@@ -295,7 +284,6 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Device: {device}")
 
-    # Test DiT-S
     model_s = DiT_S(img_size=128).to(device)
     params_s = sum(p.numel() for p in model_s.parameters())
     print(f"\nDiT-S parameters: {params_s:,} (~33M expected)")
@@ -311,7 +299,6 @@ if __name__ == "__main__":
     print(f"DiT-S forward time: {elapsed:.1f}ms")
     print(f"DiT-S output has NaN: {torch.isnan(out).any().item()}")
 
-    # Test DiT-Tiny
     model_t = DiT_Tiny(img_size=128).to(device)
     params_t = sum(p.numel() for p in model_t.parameters())
     print(f"\nDiT-Tiny parameters: {params_t:,} (~4.4M expected)")
