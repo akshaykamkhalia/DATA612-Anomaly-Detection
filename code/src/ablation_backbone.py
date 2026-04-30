@@ -1,16 +1,4 @@
-"""
-Backbone ablation: compare DiT vs UNet for anomaly detection.
 
-Loads a DiT checkpoint and a UNet checkpoint, evaluates both on
-the same MVTec category test set, and prints a comparison table.
-
-Usage:
-    python -m src.ablation_backbone \
-        --data_root data/mvtec \
-        --category hazelnut \
-        --dit_checkpoint output/checkpoints/hazelnut/best.pt \
-        --unet_checkpoint output/checkpoints_unet/hazelnut/best.pt
-"""
 
 import argparse
 import json
