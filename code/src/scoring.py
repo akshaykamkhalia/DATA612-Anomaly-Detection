@@ -1,11 +1,4 @@
-"""
-Anomaly scoring pipeline: dual-level scoring (pixel + feature).
 
-Computes:
-  1. Pixel-level: 1 - SSIM(original, reconstruction)
-  2. Feature-level: L2 distance of ResNet-18 intermediate features
-  3. Combined score: alpha * pixel + (1-alpha) * feature
-"""
 
 import torch
 import torch.nn as nn
@@ -16,10 +9,7 @@ from skimage.metrics import structural_similarity as skimage_ssim
 
 
 class FeatureExtractor(nn.Module):
-    """
-    Extract intermediate features from pretrained ResNet-18.
-    Uses layers 1, 2, 3 (after each residual block group).
-    """
+
 
     def __init__(self):
         super().__init__()
@@ -34,16 +24,7 @@ class FeatureExtractor(nn.Module):
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor) -> list:
-        """
-        Extract features from 3 layers.
 
-        Args:
-            x: images (B, 3, H, W) in [-1, 1]
-
-        Returns:
-            list of 3 feature maps at different scales
-        """
-        # Convert training-normalized inputs to ImageNet statistics for VGG.
         mean = torch.tensor([0.485, 0.456, 0.406], device=x.device).view(1, 3, 1, 1)
         std = torch.tensor([0.229, 0.224, 0.225], device=x.device).view(1, 3, 1, 1)
         x = (x + 1.0) / 2.0  # [-1,1] -> [0,1]
@@ -61,17 +42,7 @@ def compute_pixel_anomaly_map(
     reconstruction: torch.Tensor,
     win_size: int = 11,
 ) -> torch.Tensor:
-    """
-    Pixel-level anomaly map using 1 - SSIM.
 
-    Args:
-        original: (B, 3, H, W) in [-1, 1]
-        reconstruction: (B, 3, H, W) in [-1, 1]
-        win_size: SSIM window size
-
-    Returns:
-        anomaly_map: (B, 1, H, W) in [0, 1], higher = more anomalous
-    """
     # Convert to CPU numpy in [0, 1] for skimage SSIM full-map computation.
     device = original.device
     original_np = ((original.detach().cpu() + 1.0) / 2.0).clamp(0, 1).numpy()
@@ -105,7 +76,6 @@ def compute_pixel_anomaly_map_l2(
     original: torch.Tensor,
     reconstruction: torch.Tensor,
 ) -> torch.Tensor:
-    """L2 (MSE) pixel anomaly map. Returns (B, 1, H, W)."""
     diff = (original - reconstruction) ** 2
     return diff.mean(dim=1, keepdim=True)
 
@@ -115,7 +85,6 @@ def compute_pixel_anomaly_map_lpips(
     reconstruction: torch.Tensor,
     lpips_model=None,
 ) -> torch.Tensor:
-    """LPIPS perceptual anomaly map. Returns (B, 1, H, W)."""
     import lpips as lpips_lib
     if lpips_model is None:
         lpips_model = lpips_lib.LPIPS(net='alex', spatial=True).to(original.device)
@@ -132,18 +101,7 @@ def compute_feature_anomaly_map(
     reconstruction: torch.Tensor,
     img_size: int = 128,
 ) -> torch.Tensor:
-    """
-    Feature-level anomaly map using L2 distance in ResNet-18 feature space.
 
-    Args:
-        feature_extractor: pretrained ResNet-18 feature extractor
-        original: (B, 3, H, W) in [-1, 1]
-        reconstruction: (B, 3, H, W) in [-1, 1]
-        img_size: target spatial size for upsampling
-
-    Returns:
-        anomaly_map: (B, 1, H, W), higher = more anomalous
-    """
     feats_orig = feature_extractor(original)
     feats_recon = feature_extractor(reconstruction)
 
@@ -164,18 +122,7 @@ def compute_combined_anomaly_map(
     feature_map: torch.Tensor,
     alpha: float = 0.5,
 ) -> torch.Tensor:
-    """
-    Combine pixel and feature anomaly maps.
 
-    Args:
-        pixel_map: (B, 1, H, W) pixel-level anomaly scores
-        feature_map: (B, 1, H, W) feature-level anomaly scores
-        alpha: weight for pixel map (1-alpha for feature map)
-
-    Returns:
-        combined: (B, 1, H, W) combined anomaly map
-    """
-    # Normalize per image so pixel and feature maps share a comparable scale.
     B = pixel_map.shape[0]
     pixel_norm = pixel_map.clone()
     feature_norm = feature_map.clone()
@@ -193,17 +140,7 @@ def compute_combined_anomaly_map(
 
 
 def compute_image_score(anomaly_map: torch.Tensor) -> torch.Tensor:
-    """
-    Compute per-image anomaly score from spatial anomaly map.
-    Uses max over the spatial map. Max is correct here: defects can cover <5%
-    of the image area, so percentile-based aggregation misses them entirely.
 
-    Args:
-        anomaly_map: (B, 1, H, W)
-
-    Returns:
-        scores: (B,) image-level anomaly scores
-    """
     return anomaly_map.flatten(1).max(dim=1).values
 
 

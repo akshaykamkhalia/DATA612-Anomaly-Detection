@@ -1,10 +1,4 @@
-"""
-Evaluation: compute AUROC and PRO metrics for anomaly detection.
 
-Usage:
-    python -m src.evaluate --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt
-"""
 
 import argparse
 import json
@@ -41,15 +35,7 @@ def evaluate_category(
     img_size: int = 128,
     scoring: str = "l2",
 ) -> dict:
-    """
-    Evaluate anomaly detection on one MVTec category.
 
-    Args:
-        scoring: pixel scoring method -- "l2" (MSE, recommended) or "ssim"
-
-    Returns:
-        dict with image_auroc, pixel_auroc, and per-image details
-    """
     model.eval()
     all_image_scores = []
     all_image_labels = []

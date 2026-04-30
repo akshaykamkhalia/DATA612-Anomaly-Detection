@@ -1,14 +1,4 @@
-"""
-Anomalib baselines: PatchCore and Reverse Distillation on MVTec AD.
 
-Uses anomalib's own MVTec datamodule and Engine (v1.x API) with a
-fallback to the v0.x Trainer-based API.
-
-Usage:
-    python -m src.run_baselines --method patchcore --category hazelnut
-    python -m src.run_baselines --method all --category all
-    python -m src.run_baselines --method reverse_distillation --category bottle
-"""
 
 from __future__ import annotations
 
@@ -132,7 +122,6 @@ def _build_datamodule(category: str, data_root: str, img_size: int = 256):
 
 
 def _build_model(method: str):
-    """Return (model_instance, max_epochs) for the requested method."""
     if method == "patchcore":
         model = Patchcore()
         max_epochs = 1  # memory-bank, no gradient training
@@ -145,11 +134,7 @@ def _build_model(method: str):
 
 
 def _extract_metrics(test_results) -> dict:
-    """Pull image_AUROC and pixel_AUROC from anomalib test output.
 
-    anomalib returns results in different shapes depending on version.
-    We try several access patterns.
-    """
     img_auroc = None
     pix_auroc = None
 

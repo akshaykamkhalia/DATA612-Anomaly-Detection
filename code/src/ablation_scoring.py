@@ -1,13 +1,4 @@
-"""
-Ablation study: Scoring method comparison (SSIM vs L2 vs LPIPS).
 
-Reconstructs test images once, then scores with all three pixel-level
-methods. Reports image-level and pixel-level AUROC for each.
-
-Usage:
-    python -m src.ablation_scoring --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt
-"""
 
 import argparse
 import json
@@ -41,15 +32,7 @@ def reconstruct_all(
     t_partial: int = 250,
     num_ddim_steps: int = 50,
 ):
-    """
-    Reconstruct all test images via DDIM (done once, shared across methods).
-
-    Returns:
-        originals: list of (B, 3, H, W) tensors
-        reconstructions: list of (B, 3, H, W) tensors
-        masks_list: list of (B, 1, H, W) tensors
-        labels_list: list of (B,) numpy arrays
-    """
+    
     model.eval()
     originals = []
     reconstructions = []
@@ -82,16 +65,7 @@ def score_with_method(
     device: str,
     lpips_model=None,
 ):
-    """
-    Score all batches with a specific pixel-level method, combine with
-    feature maps, and compute AUROC metrics.
-
-    Args:
-        method_name: one of 'ssim', 'l2', 'lpips'
-
-    Returns:
-        dict with image_auroc and pixel_auroc
-    """
+    
     all_image_scores = []
     all_image_labels = []
     all_pixel_preds = []

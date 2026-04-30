@@ -1,17 +1,4 @@
-"""
-Export anomaly maps as .tiff files and run official MVTec PRO evaluation.
 
-Exports full-resolution anomaly maps matching MVTec directory structure,
-then optionally runs the official MVTec AD evaluation script to compute
-AU-PRO and AU-ROC metrics.
-
-Usage:
-    python -m src.export_tiff --checkpoint output/checkpoints/hazelnut/best.pt \
-        --category hazelnut --run_eval
-
-    python -m src.export_tiff --checkpoint output/checkpoints/hazelnut/best.pt \
-        --category hazelnut --data_root data/mvtec --output_dir output/predictions
-"""
 
 import argparse
 import json
@@ -40,12 +27,7 @@ from src.scoring import (
 
 
 class MVTecDatasetWithPaths(MVTecDataset):
-    """
-    Extends MVTecDataset to also return the original image file path.
 
-    For the test split, __getitem__ returns:
-        (image_tensor, mask, label, image_path_str)
-    """
 
     def __getitem__(self, idx: int):
         image = Image.open(self.image_paths[idx]).convert("RGB")
@@ -66,7 +48,6 @@ class MVTecDatasetWithPaths(MVTecDataset):
 
 
 def collate_with_paths(batch):
-    """Custom collate function that handles the path string in the 4th position."""
     images = torch.stack([item[0] for item in batch])
     masks = torch.stack([item[1] for item in batch])
     labels = torch.tensor([item[2] for item in batch])
@@ -75,17 +56,7 @@ def collate_with_paths(batch):
 
 
 def get_original_resolution(data_root: str, category: str) -> tuple:
-    """
-    Determine the original image resolution for a given MVTec category
-    by reading one test image from disk with PIL.
 
-    Args:
-        data_root: path to mvtec/ folder
-        category: MVTec category name
-
-    Returns:
-        (height, width) of the original image
-    """
     test_dir = Path(data_root) / category / "test"
     for subdir in sorted(test_dir.iterdir()):
         if not subdir.is_dir():
@@ -105,20 +76,7 @@ def derive_tiff_path(
     data_root: str,
     output_dir: str,
 ) -> Path:
-    """
-    Convert an original MVTec image path to its corresponding .tiff output path.
 
-    Maps: data/mvtec/hazelnut/test/crack/000.png
-       -> output/predictions/hazelnut/test/crack/000.tiff
-
-    Args:
-        original_path: absolute path to the original test image
-        data_root: path to mvtec/ folder (e.g., "data/mvtec")
-        output_dir: base output directory for predictions
-
-    Returns:
-        Path object for the output .tiff file
-    """
     original = Path(original_path)
     root = Path(data_root)
 
@@ -147,32 +105,7 @@ def export_category(
     alpha: float = 0.5,
     batch_size: int = 8,
 ) -> int:
-    """
-    Export anomaly maps for one MVTec category as .tiff files.
-
-    For each test image:
-      1. Reconstruct via DDIM
-      2. Compute combined anomaly map at model resolution (img_size x img_size)
-      3. Upsample to original MVTec resolution
-      4. Save as float32 .tiff
-
-    Args:
-        model: trained DiT model
-        diffusion: GaussianDiffusion instance
-        feature_extractor: pretrained ResNet-18 feature extractor
-        data_root: path to mvtec/ folder
-        category: MVTec category name
-        output_dir: base output directory for .tiff files
-        device: torch device
-        img_size: model input resolution
-        t_partial: partial diffusion timestep
-        num_ddim_steps: number of DDIM sampling steps
-        alpha: weight for pixel map in combined scoring
-        batch_size: batch size for processing
-
-    Returns:
-        Number of .tiff files exported
-    """
+    
     model.eval()
 
     orig_h, orig_w = get_original_resolution(data_root, category)
@@ -231,20 +164,7 @@ def run_mvtec_evaluation(
     category: str = None,
     eval_script_dir: str = None,
 ) -> dict:
-    """
-    Run the official MVTec AD evaluation script via subprocess.
-
-    Args:
-        data_root: path to mvtec/ folder (dataset_base_dir)
-        output_dir: path to predictions directory (anomaly_maps_dir)
-        results_dir: path to store evaluation results
-        category: single category or None for all
-        eval_script_dir: directory containing evaluate_experiment.py.
-            Defaults to data/mvtec_ad_evaluation relative to code/ working dir.
-
-    Returns:
-        dict with parsed evaluation results, or empty dict on failure
-    """
+    
     if eval_script_dir is None:
         eval_script_dir = str(
             Path(data_root).parent / "mvtec_ad_evaluation"

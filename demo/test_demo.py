@@ -1,8 +1,4 @@
-"""
-End-to-end test of classify(): for each category, run on the 3 good and 3
-defective sample images and report label, score, threshold, and accuracy.
-Saves visualizations for one good + one defective per category.
-"""
+
 import time
 from pathlib import Path
 

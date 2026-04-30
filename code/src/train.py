@@ -1,11 +1,4 @@
-"""
-Training loop for diffusion model (DiT or UNet backbone) with AMP support.
 
-Usage:
-    python -m src.train --category hazelnut --epochs 5
-    python -m src.train --category hazelnut --epochs 100 --batch_size 16
-    python -m src.train --category hazelnut --backbone unet --epochs 100
-"""
 
 import argparse
 import csv
@@ -30,7 +23,6 @@ _MODEL_TO_BACKBONE = {
 
 
 def set_seed(seed: int):
-    """Set all random seeds for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -57,29 +49,7 @@ def train(
     gradient_clip: float = 1.0,
     backbone: str = None,
 ):
-    """
-    Train diffusion model on normal images from one MVTec category.
 
-    Args:
-        category: MVTec AD category name (e.g. "hazelnut")
-        data_root: path to mvtec/ dataset folder
-        img_size: image resize dimension
-        batch_size: training batch size
-        epochs: number of training epochs
-        lr: learning rate for AdamW
-        weight_decay: AdamW weight decay
-        timesteps: total diffusion timesteps (T)
-        checkpoint_dir: directory for saving checkpoints and logs
-        device: "cuda" or "cpu"
-        seed: random seed for reproducibility
-        model_size: DEPRECATED -- use backbone instead. "small" or "tiny"
-        num_workers: dataloader workers
-        warmup_epochs: linear warmup epochs before cosine decay
-        save_every: save checkpoint every N epochs
-        gradient_clip: max gradient norm for clipping
-        backbone: "dit_small", "dit_tiny", or "unet". If None, falls back to
-                  model_size for backward compatibility.
-    """
     set_seed(seed)
 
     if device == "cuda" and not torch.cuda.is_available():
@@ -120,7 +90,6 @@ def train(
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    # Linear warmup followed by cosine annealing.
     def lr_lambda(epoch):
         if epoch < warmup_epochs:
             return (epoch + 1) / warmup_epochs

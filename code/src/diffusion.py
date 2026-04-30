@@ -1,12 +1,4 @@
-"""
-Gaussian Diffusion with cosine noise schedule and DDIM sampling.
 
-Implements:
-  - Cosine beta schedule (Nichol & Dhariwal, 2021)
-  - Forward process q(x_t | x_0)
-  - DDIM reverse sampling (Song et al., 2021)
-  - Reconstruction pipeline for anomaly detection
-"""
 
 import math
 import torch
@@ -15,13 +7,7 @@ import numpy as np
 
 
 def cosine_beta_schedule(timesteps: int = 1000, s: float = 0.008) -> torch.Tensor:
-    """
-    Cosine noise schedule from "Improved Denoising Diffusion Probabilistic
-    Models" (Nichol & Dhariwal, 2021).
-
-    Returns:
-        betas: (timesteps,) tensor, values in (0, 0.999)
-    """
+    
     steps = timesteps + 1
     t = torch.linspace(0, timesteps, steps)
     f_t = torch.cos(((t / timesteps) + s) / (1 + s) * (math.pi / 2)) ** 2
@@ -31,13 +17,7 @@ def cosine_beta_schedule(timesteps: int = 1000, s: float = 0.008) -> torch.Tenso
 
 
 class GaussianDiffusion:
-    """
-    Manages diffusion schedule, forward noising, and DDIM reverse sampling.
-
-    Args:
-        betas: noise schedule tensor of shape (T,)
-        device: torch device
-    """
+    
 
     def __init__(self, betas: torch.Tensor, device: str = "cpu"):
         self.timesteps = len(betas)
@@ -66,19 +46,7 @@ class GaussianDiffusion:
         t: torch.Tensor,
         noise: torch.Tensor = None,
     ) -> torch.Tensor:
-        """
-        Forward process: compute x_t from x_0.
-
-        x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise
-
-        Args:
-            x_0: clean images (B, C, H, W)
-            t: timesteps (B,) in [0, T-1]
-            noise: optional pre-sampled Gaussian noise (B, C, H, W)
-
-        Returns:
-            x_t: noised images (B, C, H, W)
-        """
+        
         if noise is None:
             noise = torch.randn_like(x_0)
 
@@ -96,19 +64,7 @@ class GaussianDiffusion:
         num_steps: int = 50,
         eta: float = 0.0,
     ) -> torch.Tensor:
-        """
-        DDIM reverse sampling from x_{t_start} to x_0.
-
-        Args:
-            model: noise prediction network (DiT or UNet)
-            x_t: noised image at timestep t_start (B, C, H, W)
-            t_start: starting timestep (e.g., 250)
-            num_steps: number of DDIM steps (default 50)
-            eta: stochasticity (0 = deterministic DDIM, 1 = DDPM)
-
-        Returns:
-            x_0_hat: reconstructed image (B, C, H, W)
-        """
+        
         # Build subsequence of timesteps from t_start down to 0
         step_size = max(t_start // num_steps, 1)
         timestep_seq = list(range(t_start, 0, -step_size))
@@ -161,21 +117,7 @@ class GaussianDiffusion:
         t_partial: int = 250,
         num_ddim_steps: int = 50,
     ) -> torch.Tensor:
-        """
-        Anomaly detection reconstruction: noise then denoise.
-
-        1. Add t_partial steps of noise to x_0
-        2. DDIM reverse to get x_0_hat
-
-        Args:
-            model: trained noise prediction network
-            x_0: clean test images (B, C, H, W) in [-1, 1]
-            t_partial: noise steps to add (tune via ablation, default 250)
-            num_ddim_steps: DDIM sampling steps (default 50)
-
-        Returns:
-            x_0_hat: reconstruction (B, C, H, W)
-        """
+        
         batch_size = x_0.shape[0]
         t = torch.full((batch_size,), t_partial - 1, device=self.device, dtype=torch.long)
 

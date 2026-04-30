@@ -1,12 +1,4 @@
-"""
-Streamlit live demo for DiT-based anomaly detection.
 
-Run from demo/:
-    conda run -n base streamlit run app.py
-
-Drag-and-drop a product image -> verdict + heatmap + reconstruction +
-score-distribution context (where this image falls vs the full test set).
-"""
 from __future__ import annotations
 
 import json
@@ -31,6 +23,7 @@ st.set_page_config(
 )
 
 st.markdown(
+    
     """
 <style>
     .verdict-banner {

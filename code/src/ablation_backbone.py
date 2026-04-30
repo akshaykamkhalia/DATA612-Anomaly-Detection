@@ -1,16 +1,4 @@
-"""
-Backbone ablation: compare DiT vs UNet for anomaly detection.
 
-Loads a DiT checkpoint and a UNet checkpoint, evaluates both on
-the same MVTec category test set, and prints a comparison table.
-
-Usage:
-    python -m src.ablation_backbone \
-        --data_root data/mvtec \
-        --category hazelnut \
-        --dit_checkpoint output/checkpoints/hazelnut/best.pt \
-        --unet_checkpoint output/checkpoints_unet/hazelnut/best.pt
-"""
 
 import argparse
 import json
@@ -44,11 +32,7 @@ def measure_inference_time(
     warmup_runs: int = 2,
     timed_runs: int = 5,
 ) -> float:
-    """
-    Measure average inference time (reconstruction) in seconds.
-
-    Runs warmup iterations then averages over timed iterations.
-    """
+    
     model.eval()
     with torch.no_grad():
         for _ in range(warmup_runs):
@@ -71,7 +55,6 @@ def measure_inference_time(
 
 
 def load_model(backbone: str, checkpoint_path: str, img_size: int, device: str) -> nn.Module:
-    """Load a model from checkpoint."""
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
     if backbone == "dit_small":

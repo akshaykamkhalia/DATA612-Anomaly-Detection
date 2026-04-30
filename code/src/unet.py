@@ -1,18 +1,4 @@
-"""
-UNet backbone for diffusion noise prediction.
 
-Drop-in replacement for DiT with the SAME forward interface:
-    forward(x: (B, 3, 128, 128), t: (B,)) -> (B, 3, 128, 128)
-
-Architecture (128x128 input):
-  Encoder: 4 levels, channel_mults (1,2,4,8), base_channels=64
-    128 -> 64 -> 32 -> 16 -> 8 (bottleneck)
-  Bottleneck: ResBlock -> SelfAttention -> ResBlock at 8x8
-  Decoder: 4 levels symmetric with skip connections (concat)
-  Time conditioning: sinusoidal -> MLP -> added in each ResBlock
-  GroupNorm(32) throughout, SiLU activations
-  Target: 25-40M parameters for fair comparison with DiT-S (33M)
-"""
 
 import math
 import torch
@@ -21,7 +7,6 @@ import torch.nn.functional as F
 
 
 class TimestepEmbedding(nn.Module):
-    """Sinusoidal timestep embedding -> MLP projection."""
 
     def __init__(self, time_dim: int = 256, frequency_dim: int = 256):
         super().__init__()
@@ -34,7 +19,6 @@ class TimestepEmbedding(nn.Module):
 
     @staticmethod
     def sinusoidal_embedding(t: torch.Tensor, dim: int) -> torch.Tensor:
-        """Create sinusoidal positional embeddings for timesteps."""
         half_dim = dim // 2
         emb = math.log(10000.0) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, device=t.device, dtype=torch.float32) * -emb)
@@ -50,11 +34,7 @@ class TimestepEmbedding(nn.Module):
 
 
 class ResBlock(nn.Module):
-    """
-    Residual block with time-embedding injection.
 
-    GroupNorm -> SiLU -> Conv -> GroupNorm -> SiLU -> Conv + skip + time_emb
-    """
 
     def __init__(self, in_channels: int, out_channels: int, time_dim: int):
         super().__init__()
@@ -77,13 +57,7 @@ class ResBlock(nn.Module):
             self.skip = nn.Identity()
 
     def forward(self, x: torch.Tensor, t_emb: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: (B, C, H, W)
-            t_emb: (B, time_dim)
-        Returns:
-            (B, out_channels, H, W)
-        """
+
         h = self.norm1(x)
         h = self.act(h)
         h = self.conv1(h)
@@ -100,7 +74,6 @@ class ResBlock(nn.Module):
 
 
 class Downsample(nn.Module):
-    """Spatial downsample via strided convolution."""
 
     def __init__(self, channels: int):
         super().__init__()
@@ -111,7 +84,6 @@ class Downsample(nn.Module):
 
 
 class Upsample(nn.Module):
-    """Spatial upsample via nearest interpolation + conv."""
 
     def __init__(self, channels: int):
         super().__init__()
@@ -123,10 +95,7 @@ class Upsample(nn.Module):
 
 
 class SelfAttention(nn.Module):
-    """
-    Self-attention for spatial feature maps.
-    Reshape (B, C, H, W) -> (B, H*W, C), apply MHA, reshape back.
-    """
+
 
     def __init__(self, channels: int, num_heads: int = 4):
         super().__init__()
@@ -143,19 +112,7 @@ class SelfAttention(nn.Module):
 
 
 class UNet(nn.Module):
-    """
-    UNet backbone for diffusion noise prediction.
 
-    Drop-in replacement for DiT with the same forward signature:
-        forward(x: (B, 3, 128, 128), t: (B,)) -> (B, 3, 128, 128)
-
-    Args:
-        img_size: input image resolution (default 128)
-        in_channels: input channels (default 3 for RGB)
-        base_channels: base channel count (default 64)
-        channel_mults: channel multipliers per encoder level
-        time_dim: timestep embedding dimension
-    """
 
     def __init__(
         self,
@@ -221,16 +178,7 @@ class UNet(nn.Module):
         nn.init.zeros_(self.conv_out.bias)
 
     def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass: predict noise from noised image + timestep.
 
-        Args:
-            x: noised images (B, 3, 128, 128)
-            t: timesteps (B,) integers in [0, T-1]
-
-        Returns:
-            predicted noise (B, 3, 128, 128)
-        """
         t_emb = self.time_embed(t)
 
         h = self.conv_in(x)

@@ -1,17 +1,4 @@
-"""
-Ablation study: Feature-level scoring (pixel-only vs combined vs feature-only).
 
-Reconstructs test images once, computes pixel (SSIM) and feature (ResNet-18)
-maps once, then evaluates at multiple alpha values.
-
-Usage:
-    python -m src.ablation_features --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt
-
-    # Alpha sweep with plot
-    python -m src.ablation_features --data_root data/mvtec --category hazelnut \
-        --checkpoint output/checkpoints/hazelnut/best.pt --sweep
-"""
 
 import argparse
 import json
@@ -49,15 +36,7 @@ def reconstruct_and_compute_maps(
     num_ddim_steps: int = 50,
     img_size: int = 128,
 ):
-    """
-    Reconstruct all test images and compute pixel + feature maps once.
-
-    Returns:
-        pixel_maps: list of (B, 1, H, W) tensors
-        feat_maps: list of (B, 1, H, W) tensors
-        masks_list: list of (B, 1, H, W) tensors
-        labels_list: list of (B,) numpy arrays
-    """
+    
     model.eval()
     pixel_maps = []
     feat_maps = []
@@ -92,16 +71,7 @@ def evaluate_alpha(
     labels_list,
     alpha: float,
 ):
-    """
-    Compute AUROC metrics for a given alpha value.
-
-    Args:
-        alpha: weight for pixel map (1-alpha for feature map).
-               1.0 = pixel-only, 0.0 = feature-only.
-
-    Returns:
-        dict with image_auroc and pixel_auroc
-    """
+    
     all_image_scores = []
     all_image_labels = []
     all_pixel_preds = []

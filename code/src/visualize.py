@@ -1,10 +1,4 @@
-"""
-Visualization: generate 6-panel comparison figures for anomaly detection.
 
-Panel layout:
-  [Input] [Reconstruction] [|Input - Recon|]
-  [GT Mask] [Anomaly Map] [Overlay]
-"""
 
 import torch
 import numpy as np
@@ -15,7 +9,6 @@ from pathlib import Path
 
 
 def tensor_to_numpy(img: torch.Tensor) -> np.ndarray:
-    """Convert (C, H, W) tensor in [-1, 1] to (H, W, C) numpy in [0, 1]."""
     img = (img + 1.0) / 2.0
     img = img.clamp(0, 1).cpu().numpy()
     return np.transpose(img, (1, 2, 0))
@@ -29,20 +22,7 @@ def create_six_panel(
     title: str = "",
     save_path: str = None,
 ) -> plt.Figure:
-    """
-    Create a 6-panel visualization figure.
 
-    Args:
-        original: (3, H, W) in [-1, 1]
-        reconstruction: (3, H, W) in [-1, 1]
-        gt_mask: (1, H, W) binary mask
-        anomaly_map: (1, H, W) anomaly scores
-        title: figure title
-        save_path: if provided, save figure to this path
-
-    Returns:
-        matplotlib Figure
-    """
     orig_np = tensor_to_numpy(original)
     recon_np = tensor_to_numpy(reconstruction)
     diff_np = np.abs(orig_np - recon_np).mean(axis=-1)
@@ -98,19 +78,7 @@ def visualize_batch(
     output_dir: str,
     max_samples: int = 8,
 ):
-    """
-    Generate 6-panel figures for a batch of test images.
 
-    Args:
-        originals: (B, 3, H, W) in [-1, 1]
-        reconstructions: (B, 3, H, W) in [-1, 1]
-        gt_masks: (B, 1, H, W) binary
-        anomaly_maps: (B, 1, H, W)
-        labels: list of int (0=normal, 1=anomalous)
-        category: MVTec category name
-        output_dir: save directory
-        max_samples: max figures to generate
-    """
     output_dir = Path(output_dir)
     n = min(len(originals), max_samples)
 

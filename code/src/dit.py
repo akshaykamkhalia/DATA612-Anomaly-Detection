@@ -1,14 +1,4 @@
-"""
-Diffusion Transformer (DiT) backbone for noise prediction.
 
-Adapted from Peebles & Xie, "Scalable Diffusion Models with Transformers"
-(ICCV 2023). Reference: https://github.com/facebookresearch/DiT
-
-Architecture:
-  Patchify -> Positional Embedding -> N x DiTBlock(AdaLN-Zero) -> Unpatchify
-  Input: noised image (B, 3, H, W) + timestep (B,)
-  Output: predicted noise (B, 3, H, W)
-"""
 
 import math
 import torch
@@ -21,7 +11,6 @@ def modulate(x: torch.Tensor, shift: torch.Tensor, scale: torch.Tensor) -> torch
 
 
 class PatchEmbed(nn.Module):
-    """Image to patch embedding via Conv2d."""
 
     def __init__(self, img_size: int = 128, patch_size: int = 4,
                  in_channels: int = 3, embed_dim: int = 384):
@@ -40,7 +29,6 @@ class PatchEmbed(nn.Module):
 
 
 class TimestepEmbedder(nn.Module):
-    """Sinusoidal timestep embedding -> MLP -> hidden_size vector."""
 
     def __init__(self, hidden_size: int, frequency_dim: int = 256):
         super().__init__()
@@ -53,7 +41,6 @@ class TimestepEmbedder(nn.Module):
 
     @staticmethod
     def sinusoidal_embedding(t: torch.Tensor, dim: int) -> torch.Tensor:
-        """Create sinusoidal positional embeddings for timesteps."""
         half_dim = dim // 2
         emb = math.log(10000.0) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, device=t.device, dtype=torch.float32) * -emb)
@@ -69,12 +56,7 @@ class TimestepEmbedder(nn.Module):
 
 
 class DiTBlock(nn.Module):
-    """
-    Transformer block with AdaLN-Zero conditioning.
-
-    Produces 6 modulation parameters (shift, scale, gate for both
-    attention and MLP branches) from the timestep embedding.
-    """
+    
 
     def __init__(self, hidden_size: int, num_heads: int, mlp_ratio: float = 4.0):
         super().__init__()
@@ -101,11 +83,7 @@ class DiTBlock(nn.Module):
         nn.init.zeros_(self.adaLN_modulation[1].bias)
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: token sequence (B, N, D)
-            c: conditioning vector (B, D) from timestep embedder
-        """
+        
         shift1, scale1, gate1, shift2, scale2, gate2 = \
             self.adaLN_modulation(c).chunk(6, dim=-1)
 
@@ -123,7 +101,6 @@ class DiTBlock(nn.Module):
 
 
 class FinalLayer(nn.Module):
-    """Final AdaLN + linear projection to patch pixels."""
 
     def __init__(self, hidden_size: int, patch_size: int, out_channels: int):
         super().__init__()
@@ -146,18 +123,7 @@ class FinalLayer(nn.Module):
 
 
 class DiT(nn.Module):
-    """
-    Diffusion Transformer for noise prediction.
 
-    Args:
-        img_size: input image resolution (default 128)
-        patch_size: patch size for patchification (default 4)
-        in_channels: input channels (default 3 for RGB)
-        hidden_size: transformer hidden dimension
-        depth: number of transformer blocks
-        num_heads: number of attention heads
-        mlp_ratio: MLP hidden dim multiplier
-    """
 
     def __init__(
         self,
@@ -193,7 +159,6 @@ class DiT(nn.Module):
         self._initialize_weights()
 
     def _initialize_weights(self):
-        """Initialize weights following DiT paper conventions."""
         # Positional embedding: truncated normal
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
@@ -219,9 +184,7 @@ class DiT(nn.Module):
                     nn.init.zeros_(layer.bias)
 
     def unpatchify(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Reshape (B, num_patches, patch_size^2 * C) -> (B, C, H, W).
-        """
+
         p = self.patch_size
         c = self.in_channels
         h = w = self.img_size // p
@@ -232,16 +195,7 @@ class DiT(nn.Module):
         return x
 
     def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass: predict noise from noised image + timestep.
 
-        Args:
-            x: noised images (B, 3, img_size, img_size)
-            t: timesteps (B,) integers in [0, T-1]
-
-        Returns:
-            predicted noise (B, 3, img_size, img_size)
-        """
         x = self.patch_embed(x) + self.pos_embed
 
         c = self.time_embed(t)
@@ -256,7 +210,6 @@ class DiT(nn.Module):
 
 
 def DiT_S(img_size: int = 128) -> DiT:
-    """DiT-Small: 384 hidden, 12 blocks, 6 heads (~33M params)."""
     return DiT(
         img_size=img_size,
         hidden_size=384,
@@ -266,7 +219,6 @@ def DiT_S(img_size: int = 128) -> DiT:
 
 
 def DiT_Tiny(img_size: int = 128) -> DiT:
-    """DiT-Tiny: 192 hidden, 6 blocks, 3 heads (~4.4M params)."""
     return DiT(
         img_size=img_size,
         hidden_size=192,

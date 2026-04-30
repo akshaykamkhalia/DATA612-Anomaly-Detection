@@ -1,15 +1,4 @@
-"""
-Copy a small set of MVTec test images per category into demo/sample_images/
-so the Streamlit demo has self-contained click-to-try examples.
 
-Picks 3 'good' images and 3 defective images (spread across defect types)
-per category that has a checkpoint extracted on disk.
-
-Run from demo/:
-    python prepare_samples.py --data /path/to/mvtec
-
-Or set the env var MVTEC_ROOT to skip --data on every call.
-"""
 import argparse
 import os
 import shutil

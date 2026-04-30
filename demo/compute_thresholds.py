@@ -1,14 +1,4 @@
-"""
-For each category that has a checkpoint, run the trained model on the entire
-MVTec test set, collect image-level scores, then compute:
 
-  - Image AUROC
-  - Optimal decision threshold (Youden's J on the ROC: argmax TPR - FPR)
-  - Mean/std of normal vs defective score distributions
-  - The score quantiles that would correspond to common operating points
-
-Saves results to thresholds.json. Re-run to refresh.
-"""
 import json
 import time
 from pathlib import Path
@@ -26,12 +16,7 @@ OUT_PATH = DEMO_DIR / "thresholds.json"
 
 
 def collect_scores(category: str, n_repeats: int = 5) -> dict:
-    """
-    Score every test image n_repeats times with deterministic seeds (0..n-1)
-    and average. Averaging dramatically reduces stochastic noise from
-    `q_sample`'s random noise draw and brings AUROC close to the published
-    baselines.
-    """
+
     test_root = DATA_ROOT / category / "test"
     if not test_root.exists():
         raise FileNotFoundError(f"No MVTec test data for {category} at {test_root}")

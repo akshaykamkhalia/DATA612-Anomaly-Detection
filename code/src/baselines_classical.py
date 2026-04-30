@@ -1,14 +1,4 @@
-"""
-Classical baselines for MVTec AD anomaly detection: PCA and Convolutional Autoencoder.
 
-Provides two reconstruction-based baselines for comparison against the DiT model:
-  1. PCA -- flatten images, fit PCA on normals, reconstruct, MSE anomaly map
-  2. ConvAutoencoder -- symmetric Conv/ConvTranspose encoder-decoder, MSE anomaly map
-
-Usage:
-    python -m src.baselines_classical --data_root data/mvtec --category hazelnut
-    python -m src.baselines_classical --data_root data/mvtec --category all
-"""
 
 import argparse
 import json
@@ -38,12 +28,7 @@ IMG_CHANNELS = 3
 
 
 class PCABaseline:
-    """
-    PCA reconstruction baseline for anomaly detection.
-
-    Flattens training images to vectors, fits PCA, then scores test images
-    by the per-pixel MSE between original and PCA-reconstructed image.
-    """
+    
 
     def __init__(self, n_components: int = 100):
         self.n_components = n_components
@@ -51,15 +36,7 @@ class PCABaseline:
 
     @staticmethod
     def _loader_to_flat_numpy(loader, is_train: bool = True) -> np.ndarray:
-        """Collect all images from a DataLoader into a flat numpy array.
-
-        Args:
-            loader: DataLoader yielding images (train) or (images, masks, labels) (test).
-            is_train: if True, loader returns only images.
-
-        Returns:
-            images as (N, C*H*W) float32 numpy array.
-        """
+        
         all_imgs = []
         for batch in loader:
             imgs = batch if is_train else batch[0]
@@ -78,19 +55,12 @@ class PCABaseline:
         return np.concatenate(all_masks, axis=0), np.concatenate(all_labels, axis=0)
 
     def fit(self, train_loader):
-        """Fit PCA on normal training images."""
         X_train = self._loader_to_flat_numpy(train_loader, is_train=True)
         self.pca.fit(X_train)
         return self
 
     def predict(self, test_loader):
-        """Compute anomaly maps and collect ground truth for evaluation.
-
-        Returns:
-            anomaly_maps: (N, 1, H, W) float32 numpy array
-            masks: (N, 1, H, W) binary numpy array
-            labels: (N,) int numpy array  (0=normal, 1=anomalous)
-        """
+        
         X_test = self._loader_to_flat_numpy(test_loader, is_train=False)
         masks, labels = self._collect_test_labels(test_loader)
 
@@ -107,15 +77,7 @@ class PCABaseline:
 
 
 class ConvAutoencoder(nn.Module):
-    """
-    Symmetric convolutional autoencoder for reconstruction-based anomaly detection.
-
-    Architecture:
-        Encoder: Conv2d(3->32) -> Conv2d(32->64) -> Conv2d(64->128) -> Conv2d(128->256)
-        Decoder: ConvTranspose2d(256->128) -> ConvTranspose2d(128->64) ->
-                 ConvTranspose2d(64->32) -> ConvTranspose2d(32->3, Tanh)
-        Input/output: (B, 3, 128, 128), bottleneck: (B, 256, 8, 8)
-    """
+    
 
     def __init__(self):
         super().__init__()
@@ -188,13 +150,7 @@ def ae_predict(
     test_loader,
     device: str = "cpu",
 ):
-    """Compute anomaly maps from autoencoder reconstruction error.
-
-    Returns:
-        anomaly_maps: (N, 1, H, W) float32 numpy array
-        masks: (N, 1, H, W) binary numpy array
-        labels: (N,) int numpy array
-    """
+    
     model.eval()
     all_maps, all_masks, all_labels = [], [], []
 
@@ -216,16 +172,7 @@ def ae_predict(
 
 
 def compute_aurocs(anomaly_maps: np.ndarray, masks: np.ndarray, labels: np.ndarray):
-    """Compute image-level and pixel-level AUROC.
-
-    Args:
-        anomaly_maps: (N, 1, H, W) predicted anomaly scores
-        masks: (N, 1, H, W) ground truth binary masks
-        labels: (N,) image-level labels (0=normal, 1=anomalous)
-
-    Returns:
-        dict with image_auroc, pixel_auroc
-    """
+    
     # Image AUROC: score = max of anomaly map per image
     image_scores = anomaly_maps.reshape(anomaly_maps.shape[0], -1).max(axis=1)
 
@@ -277,10 +224,7 @@ def parse_args():
 
 
 def format_table(results: dict) -> str:
-    """Format results as a simple ASCII table (no tabulate dependency required).
-
-    Falls back to tabulate if available, otherwise uses manual formatting.
-    """
+    
     try:
         from tabulate import tabulate
         headers = ["Category", "PCA Img AUROC", "PCA Pix AUROC",
@@ -354,11 +298,7 @@ def run_category(
     batch_size: int,
     num_workers: int,
 ) -> dict:
-    """Run both PCA and AE baselines on a single category.
-
-    Returns:
-        dict with 'pca' and 'autoencoder' sub-dicts containing AUROC metrics.
-    """
+    
     print(f"\n{'='*60}")
     print(f"Category: {category}")
     print(f"{'='*60}")

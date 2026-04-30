@@ -1,25 +1,4 @@
-"""
-Demo inference: classify a single image as NORMAL or DEFECTIVE
-using the trained DiT-Tiny diffusion-reconstruction model.
 
-This module is the core backend for the live demo (Jupyter or Gradio).
-
-Pipeline (per call):
-  1. Load image -> resize 128x128 -> normalize to [-1, 1]
-  2. Add t_partial=250 steps of noise (cosine schedule)
-  3. DDIM denoise (50 steps) -> reconstruction
-  4. Pixel anomaly map (L2) + ResNet-18 feature anomaly map (per-image normalized)
-  5. Combined map = 0.5 * pixel + 0.5 * feature
-  6. Image score = max of combined map
-  7. Compare against per-category threshold -> label
-
-Usage (programmatic):
-    from demo_inference import classify
-    out = classify("some/image.png", category="hazelnut")
-    print(out["label"], out["score"], "vs threshold", out["threshold"])
-    out["heatmap"].save("heatmap.png")          # PIL Image
-    out["reconstruction"].save("recon.png")
-"""
 from __future__ import annotations
 
 import json
@@ -185,15 +164,7 @@ def _score_once(x: torch.Tensor, category: str, seed: int | None) -> dict:
 def score_image(image: Union[str, Path, Image.Image, np.ndarray],
                 category: str,
                 n_runs: int = 5) -> dict:
-    """
-    Run the diffusion-reconstruction pipeline on one image and return the
-    image-level anomaly score plus the last reconstruction and the AVERAGED
-    anomaly map.
 
-    n_runs averaging matches the protocol used to compute thresholds.json,
-    so single-image scores at inference time are comparable to the threshold.
-    Uses deterministic seeds 0..n_runs-1 for reproducibility.
-    """
     pil = _to_pil(image)
     x = _PREPROCESS(pil).unsqueeze(0).to(DEVICE)  # (1, 3, H, W) in [-1, 1]
 
@@ -224,28 +195,7 @@ def classify(image: Union[str, Path, Image.Image, np.ndarray],
              category: str,
              threshold: float | None = None,
              n_runs: int = 5) -> dict:
-    """
-    Top-level demo entrypoint.
 
-    Args:
-        image: file path, PIL Image, or HxWx3 ndarray
-        category: MVTec category name (must have a checkpoint extracted)
-        threshold: override threshold; if None, read from thresholds.json or
-                   fall back to score itself (then the verdict is meaningless --
-                   compute_thresholds.py must be run for real demos)
-
-    Returns:
-        dict with:
-          label: "DEFECTIVE" or "NORMAL"
-          score: image-level anomaly score (higher = more anomalous)
-          threshold: decision boundary used
-          margin: score - threshold (positive => DEFECTIVE)
-          confidence: a soft 0..1 score (sigmoid of margin)
-          heatmap: PIL Image (jet colormap of anomaly map)
-          overlay: PIL Image (heatmap blended on input)
-          reconstruction: PIL Image (model's "what it should look like")
-          input_resized: PIL Image (what the model actually saw)
-    """
     out = score_image(image, category, n_runs=n_runs)
     score = out["score"]
 

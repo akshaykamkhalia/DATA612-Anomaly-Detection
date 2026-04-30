@@ -21,7 +21,6 @@ demo/
   compute_thresholds.py        # one-time: per-category Youden's-J threshold
   test_demo.py                 # smoke test: classify all sample images
   README.md                    # this file
-  DEMO_SCRIPT.md               # 2-3 min presentation walkthrough
 
   thresholds.json              # AUROC + decision boundary per category
   sample_images/{cat}/{normal,defective}/   # 6 click-to-try images per cat

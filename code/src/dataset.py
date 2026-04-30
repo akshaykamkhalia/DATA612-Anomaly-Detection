@@ -1,12 +1,4 @@
-"""
-MVTec AD Dataset loader for PyTorch.
 
-Loads per-category train/test splits from the MVTec Anomaly Detection dataset.
-Training uses only normal ("good") images. Test returns images, masks, and labels.
-
-Reference: Bergmann et al., "MVTec AD -- A Comprehensive Real-World Dataset
-for Unsupervised Anomaly Detection", CVPR 2019.
-"""
 
 import os
 from pathlib import Path
@@ -30,16 +22,7 @@ def get_mvtec_categories() -> list:
 
 
 class MVTecDataset(Dataset):
-    """
-    PyTorch Dataset for MVTec Anomaly Detection.
-
-    Args:
-        root: path to mvtec/ folder containing category subdirectories
-        category: one of the 15 MVTec AD categories
-        split: "train" (normal only) or "test" (normal + anomalous)
-        img_size: resize images to (img_size, img_size)
-        augment: apply training augmentations (only when split="train")
-    """
+    
 
     def __init__(
         self,
@@ -133,19 +116,7 @@ def get_dataloaders(
     batch_size: int = 16,
     num_workers: int = 4,
 ) -> Tuple[DataLoader, DataLoader]:
-    """
-    Create train and test DataLoaders for a single MVTec AD category.
-
-    Args:
-        root: path to mvtec/ folder
-        category: one of the 15 category names
-        img_size: resize dimension
-        batch_size: batch size for both loaders
-        num_workers: dataloader workers
-
-    Returns:
-        (train_loader, test_loader)
-    """
+    
     train_ds = MVTecDataset(root, category, split="train", img_size=img_size, augment=True)
     test_ds = MVTecDataset(root, category, split="test", img_size=img_size, augment=False)
 

@@ -1,14 +1,4 @@
-"""
-Extract a subset of best.pt checkpoints from ALL_OUTPUT.zip into demo/checkpoints/.
 
-Run from the demo/ directory:
-    python extract_checkpoints.py --zip /path/to/ALL_OUTPUT.zip
-    python extract_checkpoints.py --zip /path/to/ALL_OUTPUT.zip --categories bottle pill
-
-Or set the env var ALL_OUTPUT_ZIP to skip --zip on every call.
-The zip is the per-category training output (~6.7 GB) and is hosted out of
-band (Drive / Releases) rather than committed to git. See README.md.
-"""
 import argparse
 import os
 import zipfile
